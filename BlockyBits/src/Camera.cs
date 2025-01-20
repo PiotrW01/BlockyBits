@@ -4,9 +4,9 @@ using Microsoft.Xna.Framework.Input;
 using System;
 using System.Diagnostics;
 
-internal class Camera: Object
+public class Camera: Object
 {
-    Vector3 target = Vector3.Zero;
+    public Vector3 forward = Vector3.Zero;
     Vector3 cameraUp = Vector3.Up;
 
     int prevScrollValue = 0;
@@ -19,7 +19,7 @@ internal class Camera: Object
     public Camera(GraphicsDevice gd)
     {
         pos = new Vector3(0, 0, 0);
-        viewMatrix = Matrix.CreateLookAt(pos, target, cameraUp);
+        viewMatrix = Matrix.CreateLookAt(pos, forward, cameraUp);
         projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
             MathHelper.PiOver4,
             gd.Viewport.AspectRatio,
@@ -45,7 +45,6 @@ internal class Camera: Object
             prevScrollValue = Mouse.GetState().ScrollWheelValue;
             Debug.WriteLine(speed);
         }
-
     }
     public override void HandleInput(float deltaTime)
     {
@@ -95,7 +94,7 @@ internal class Camera: Object
     {
 
         Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(rotation.Y, rotation.X, 0);
-        Vector3 forward = Vector3.Transform(Vector3.Forward, rotationMatrix);
+        forward = Vector3.Transform(Vector3.Forward, rotationMatrix);
         viewMatrix = Matrix.CreateLookAt(pos, pos + forward, cameraUp);
     }
 
