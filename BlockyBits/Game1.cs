@@ -11,13 +11,18 @@ public class Game1 : Game
     private SpriteBatch _spriteBatch;
     Point screenCenter;
     public static Camera camera;
-    GameObject obj;
     static List<Object> gameObjects = new List<Object>(10);
+    public static Dictionary<Vector2, Chunk> chunks = new();
+    public double elapsedTime = 0f;
+    public static Game1 game;
     SpriteFont font;
-    Texture2D prototypeTexture;
 
     public Game1()
     {
+        if(game == null)
+        {
+            game = this;
+        }
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
@@ -26,25 +31,18 @@ public class Game1 : Game
     protected override void Initialize()
     {
         Debugger.Enable(GraphicsDevice);
-
-
         camera = new Camera(GraphicsDevice);
-        obj = new GameObject();
         gameObjects.Add(camera);
+        _graphics.PreferredBackBufferHeight = 720;
+        _graphics.PreferredBackBufferWidth = 1280;
+        _graphics.ApplyChanges();
 
-        Random rand = new Random();
-        for (int i = 0; i < 2; i++)
-        {
-            GameObject go = new GameObject();
-            go.pos = new Vector3(0, 0, i * 5);
-            go.scale = new Vector3(rand.NextSingle()*5f);
-            gameObjects.Add(go);
-        }
-
+        gameObjects.Add(new Player());
 
         foreach (Object obj in gameObjects) 
         {
             obj.Start();
+            obj.ComponentStart();
         }
 
 
@@ -55,14 +53,22 @@ public class Game1 : Game
 
     protected override void LoadContent()
     {
+        TextureAtlas.SetAtlas(Content.Load<Texture2D>("textures/texture_atlas"));
+        Block.InitializeBlocks();
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         LoadObjectContent();
         font = Content.Load<SpriteFont>("font");
-        prototypeTexture = Content.Load<Texture2D>("grey_512");
+        chunks.Add(new Vector2(0, 0), new Chunk(0, 0));
+        chunks.Add(new Vector2(0, 1), new Chunk(0, 1));
+        chunks.Add(new Vector2(-1, 0), new Chunk(-1, 0));
+        chunks.Add(new Vector2(0, -1), new Chunk(0, -1));
+        chunks.Add(new Vector2(-1, -1), new Chunk(-1, -1));
+
     }
 
     protected override void Update(GameTime gameTime)
     {
+        elapsedTime = gameTime.TotalGameTime.TotalSeconds;
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
@@ -78,57 +84,38 @@ public class Game1 : Game
     {
 
         GraphicsDevice.Clear(Color.CornflowerBlue);
-
+        GraphicsDevice.SamplerStates[0] = new SamplerState()
+        {
+            Filter = TextureFilter.Point
+        };
         foreach (Object obj in gameObjects)
         {
-            BoundingFrustum frustum = new(camera.viewMatrix * camera.projectionMatrix);
+            //BoundingFrustum frustum = new(camera.viewMatrix * camera.projectionMatrix);
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             obj.Render();
         }
 
+        foreach(Chunk chunk in chunks.Values)
+        {
+            chunk.Render();
+        }
 
         _spriteBatch.Begin();
         _spriteBatch.DrawString(font, "hello!", new Vector2(20, 20), Color.White);
         _spriteBatch.End();
 
-
-        //Debugger.DrawLine(Vector3.Zero, new Vector3(0, 0, 30), Color.Red);
-
-
-
         base.Draw(gameTime);
-    }
-
-
-    private void CheckCollisions()
-    {
-        for (int i = 0; i < gameObjects.Count; i++)
-        {
-            if (gameObjects[i].collider != null)
-            {
-                for (int j = i; j < gameObjects.Count; j++)
-                {
-                    //gameObjects[i].collider.CollidesWith(gameObjects[j].collider);
-                }
-            }
-        }
-
-
-        foreach (var obj in gameObjects)
-        {
-            if(obj.collider != null)
-            {
-
-            }
-        }
     }
 
     private void HandleInput(float delta)
     {
+        BlockyBits.src.Keyboard.UpdateKeyState();
         if (Keyboard.GetState().GetPressedKeyCount() > 0)
         {
             foreach (Object obj in gameObjects)
             {
                 obj.HandleInput(delta);
+                obj.HandleComponentInput(delta);
             }
         }
 
@@ -139,9 +126,8 @@ public class Game1 : Game
             foreach (Object obj in gameObjects)
             {
                 obj.HandleMouseInput(delta, mouseVec);
+                obj.HandleComponentMouseInput(delta, mouseVec);
             }
-
-
             Mouse.SetPosition(screenCenter.X, screenCenter.Y);
         }
     }
@@ -150,6 +136,7 @@ public class Game1 : Game
     {
         foreach (Object obj in gameObjects)
         {
+            obj.ForceUpdate(delta);
             obj.Update(delta);
         }
     }

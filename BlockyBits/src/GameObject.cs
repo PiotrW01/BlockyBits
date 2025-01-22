@@ -7,31 +7,20 @@ using System.Net.Mime;
 
 public class GameObject: Object
 {
-    public Matrix worldMatrix;
     public Model model;
-    public Quaternion quaternion = Quaternion.Identity;
-
 
     public GameObject() 
     {
-        worldMatrix = Matrix.CreateTranslation(pos) * Matrix.CreateScale(scale);
-        collider = new BoxCollider();
-        collider.SetOwner(this);
     }
 
     public override void Start()
     {
-        foreach (var c in components)
-        {
-            c.Start();
-        }
-        AddComponent<Gravity>();
     }
 
     public override void Render()
     {
         if (model == null) return;
-        worldMatrix = Matrix.CreateScale(scale) * Matrix.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z) * Matrix.CreateTranslation(pos);
+        Matrix worldMatrix = Matrix.CreateScale(scale) * Matrix.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z) * Matrix.CreateTranslation(pos);
         foreach (ModelMesh mesh in model.Meshes)
         {
             foreach (BasicEffect effect in mesh.Effects)
@@ -48,11 +37,7 @@ public class GameObject: Object
 
     public override void Update(float deltaTime)
     {
-        foreach (var c in components)
-        {
-            c.Update(deltaTime);
-        }
-        Debug.WriteLine(pos);
+
     }
 
     public override void LoadContent(ContentManager cm)
