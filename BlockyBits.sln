@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113 d17.12
+VisualStudioVersion = 17.12.35527.113
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockyBits", "BlockyBits\BlockyBits.csproj", "{2D79D5FC-B260-4D7B-AA58-F6DEC35E25A8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockyBitsClient", "BlockyBits\BlockyBitsClient.csproj", "{2D79D5FC-B260-4D7B-AA58-F6DEC35E25A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Physics", "Physics\Physics.csproj", "{5E033B97-2B2A-45A8-B75B-E6A4D17099DE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockyBitsCommon", "BlockyBitsCommon\BlockyBitsCommon.csproj", "{6C0F9A98-B829-459D-8C83-6250C593CB45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockyBitsServer", "BlockyBitsServer\BlockyBitsServer.csproj", "{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{2D79D5FC-B260-4D7B-AA58-F6DEC35E25A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D79D5FC-B260-4D7B-AA58-F6DEC35E25A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D79D5FC-B260-4D7B-AA58-F6DEC35E25A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E033B97-2B2A-45A8-B75B-E6A4D17099DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E033B97-2B2A-45A8-B75B-E6A4D17099DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E033B97-2B2A-45A8-B75B-E6A4D17099DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E033B97-2B2A-45A8-B75B-E6A4D17099DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C0F9A98-B829-459D-8C83-6250C593CB45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C0F9A98-B829-459D-8C83-6250C593CB45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C0F9A98-B829-459D-8C83-6250C593CB45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C0F9A98-B829-459D-8C83-6250C593CB45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
