@@ -9,6 +9,7 @@ namespace BlockyBitsClient.src.gui
 {
     public abstract class GUIElement
     {
+        public bool isActive = true;
         public Rectangle rect;
         public Point pos = new Point();
         public Vector2 localPos = new Vector2(0,0);

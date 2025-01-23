@@ -39,10 +39,35 @@ internal class Utils
 
     public static Vector3 WorldToGridCoord(Vector3 pos)
     {
-        Vector2 chunkPos = new Vector2((int)(pos.X / Chunk.width), (int)(pos.Y / Chunk.depth));
-        Chunk chunk = ChunkManager.chunks[chunkPos];
-        chunk.HasBlockAt(pos);
-        return new Vector3();
+        int x, z;
+        x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);
+        z = (int)((pos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
+        return new Vector3(x, (int)pos.Y, z);
+    }
+
+    public static BoundingBox GetBoundingBoxAt(Vector3 pos)
+    {
+        int x, z;
+        Vector2 chunkPos = Vector2.Zero;
+
+        // Compute chunk coordinates
+        chunkPos.X = (float)Math.Floor(pos.X / Chunk.width);
+        chunkPos.Y = (float)Math.Floor(pos.Z / Chunk.depth);
+
+        // Compute local block coordinates (ensuring positive values)
+        x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);
+        z = (int)((pos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
+
+        ChunkManager.chunks.TryGetValue(chunkPos, out Chunk chunk);
+        if (chunk != null)
+        {
+            if(chunk.HasBlockAt(new Vector3(x, (int)pos.Y, z)))
+            {
+                return new BoundingBox(new Vector3(chunkPos.X * Chunk.width + x,(int)pos.Y, chunkPos.Y * Chunk.depth + z), 
+                                       new Vector3(chunkPos.X * Chunk.width + x + 1, (int)pos.Y + 1, chunkPos.Y * Chunk.depth + z + 1));
+            }
+        }
+        return default;
     }
 
     public static bool CollidesWithBlockAt(Vector3 pos)
@@ -73,13 +98,9 @@ internal class Utils
         ChunkManager.chunks.TryGetValue(chunkPos, out Chunk chunk);
         if(chunk != null)
         {
-            bool has = chunk.HasBlockAt(new Vector3(x, pos.Y, z));
+            bool has = chunk.HasBlockAt(new Vector3(x, (int)pos.Y, z));
             //Debug.Write($"{pos} ");
             //Debug.WriteLine($"collision at chunk [{chunkPos.X},{chunkPos.Y}], X:{x}, Z:{z}, collision:{has}");
-            if (has)
-            {
-                //Debug.WriteLine("collided");
-            }
             return chunk.HasBlockAt(new Vector3(x, (int)pos.Y, z));
         }
         return false;
@@ -157,6 +178,8 @@ internal class Utils
         }
         return new Vector2(x, z);
     }
+
+
 
     public static Vector3 GridToWorldCoord(Vector3 pos)
     {

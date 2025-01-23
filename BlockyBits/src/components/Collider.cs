@@ -21,37 +21,17 @@ public class Collider: Component
     }
 
 
+
+
     public override void Update(float deltaTime)
     {
-
-    }
-
-    public void Draw()
-    {
         BoundingBox box = this.box;
-        Vector3 counterCorner = new Vector3(box.Max.X, box.Min.Y, box.Max.Z);
-
-        //bottom ring
-        Debugger.DrawLine(box.Min, new Vector3(box.Max.X, box.Min.Y, box.Min.Z), Color.Red);
-        Debugger.DrawLine(box.Min, new Vector3(box.Min.X, box.Min.Y, box.Max.Z), Color.Red);
-
-
-        Debugger.DrawLine(counterCorner, new Vector3(box.Max.X, box.Min.Y, box.Min.Z), Color.Red);
-        Debugger.DrawLine(counterCorner, new Vector3(box.Min.X, box.Min.Y, box.Max.Z), Color.Red);
-
-        //top ring
-        Debugger.DrawLine(box.Max, new Vector3(box.Min.X, box.Max.Y, box.Max.Z), Color.Red);
-        Debugger.DrawLine(box.Max, new Vector3(box.Max.X, box.Max.Y, box.Min.Z), Color.Red);
-
-        counterCorner = new Vector3(box.Min.X, box.Max.Y, box.Min.Z);
-        Debugger.DrawLine(counterCorner, new Vector3(box.Min.X, box.Max.Y, box.Max.Z), Color.Red);
-        Debugger.DrawLine(counterCorner, new Vector3(box.Max.X, box.Max.Y, box.Min.Z), Color.Red);
-
+        Debugger.QueueDraw(box);
     }
 
     public void SetSize(float width, float depth, float height)
     {
-        offsetMin = new Vector3(width / 2, height / 2, depth / 2);
-        offsetMax = new Vector3(width / 2, height / 2, depth / 2);
+        offsetMin = new Vector3(width / 2f, height / 2f, depth / 2f);
+        offsetMax = new Vector3(width / 2f, height / 2f, depth / 2f);
     }
 }

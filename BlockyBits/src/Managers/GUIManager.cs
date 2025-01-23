@@ -21,6 +21,7 @@ namespace BlockyBitsClient.src.Managers
             MouseState state = Mouse.GetState();
             foreach (GUIElement element in guiElements)
             {
+                if (!element.isActive) continue;
                 if (element.rect.Contains(state.Position))
                 {
                     element.OnHover();
@@ -36,7 +37,7 @@ namespace BlockyBitsClient.src.Managers
                 {
                     foreach (GUIElement element in guiElements)
                     {
-
+                        if (!element.isActive) continue;
                         if (element.rect.Contains(state.Position))
                         {
                             element.OnClickChanged();
@@ -58,7 +59,10 @@ namespace BlockyBitsClient.src.Managers
         {
             foreach (GUIElement element in guiElements)
             {
-                element.Render(sb);
+                if (element.isActive)
+                {
+                    element.Render(sb);
+                }
             }
         }
 

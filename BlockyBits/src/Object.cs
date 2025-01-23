@@ -68,10 +68,25 @@ public abstract class Object
 
     }
 
+    public void AddComponent(Component c)
+    {
+        c.SetOwner(this);
+        components.Add(c);
+    }
+
     public void AddComponent<T>() where T : Component, new()
     {
         T c = new T();
         c.SetOwner(this);
         components.Add(c);
+    }
+
+    public T GetComponent<T>() where T : Component
+    {
+        foreach(Component c in components)
+        {
+            if (c.GetType() == typeof(T)) return (T)c;
+        }
+        return default;
     }
 }

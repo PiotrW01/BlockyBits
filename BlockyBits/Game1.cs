@@ -101,6 +101,7 @@ public class Game1 : Game
         ObjectManager.RenderObjects();
         spriteBatch.Begin();
         RenderDebugInfo();
+        Debugger.DrawDebugLines();
         spriteBatch.End();
         GUIManager.RenderGUI(spriteBatch);
 
@@ -130,8 +131,12 @@ public class Game1 : Game
         }
         if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F3))
         {
+            Debugger.showDebugInfo = !Debugger.showDebugInfo;
+        }
+
+        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F4))
+        {
             mouseLocked = !mouseLocked;
-            //Debugger.showDebugInfo = !Debugger.showDebugInfo;
         }
 
         if (Microsoft.Xna.Framework.Input.Keyboard.GetState().GetPressedKeyCount() > 0)
@@ -154,7 +159,7 @@ public class Game1 : Game
 
     private void RenderDebugInfo()
     {
-        if (!Debugger.showDebugInfo) return;
+        if (!Debugger.showDebugInfo || player == null) return;
         spriteBatch.DrawString(Globals.font, $"Fps: {fps}", new Vector2(20, 20), Color.White);
         spriteBatch.DrawString(Globals.font, $"Coords: {{X: {player.pos.X.ToString("F0")}, Y: {player.pos.Y.ToString("F0")}, Z: {player.pos.Z.ToString("F0")}}}", new Vector2(20, 40), Color.White);
         spriteBatch.DrawString(Globals.font, $"Chunk coords: {Utils.GetPlayerChunkPos()} at chunk: {Utils.GetChunkAt(player.pos)}", new Vector2(20, 60), Color.White);
@@ -162,7 +167,7 @@ public class Game1 : Game
 
     public void StartGame()
     {
-        Player player = new Player();
+        player = new Player();
         ObjectManager.Add(player);
 
         WorldGenerator gen = new(42);
