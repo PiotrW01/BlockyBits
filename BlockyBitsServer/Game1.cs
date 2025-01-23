@@ -10,7 +10,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 
-
 namespace BlockyBitsServer
 {
     public class Game1 : Game
@@ -22,6 +21,9 @@ namespace BlockyBitsServer
         string data = null;
         List<TcpClient> clients = new();
         List<TcpClient> deadClients = new();
+        
+
+
 
         public Game1()
         {

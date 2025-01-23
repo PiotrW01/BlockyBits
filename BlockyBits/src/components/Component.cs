@@ -18,7 +18,7 @@ public abstract class Component
 
     public virtual void HandleMouseInput(float deltaTime, Vector2 mouseVec) { }
 
-    public void SetOwner(GameObject owner)
+    public void SetOwner(Object owner)
     {
         this.owner = owner;
     }

@@ -1,4 +1,6 @@
 ﻿
+using BlockyBitsClient.src;
+using BlockyBitsClient.src.Managers;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
@@ -120,33 +122,33 @@ public class Chunk
                 if (blocks.ContainsKey(neighborPos)) continue;
                 if (neighborPos.X < 0)
                 {
-                    if (Game1.chunks.ContainsKey(new Vector2(posX - 1, posY)))
+                    if (ChunkManager.chunks.ContainsKey(new Vector2(posX - 1, posY)))
                     {
-                        if (Game1.chunks[new Vector2(posX - 1, posY)].HasBlockAt(new Vector3(width - 1, pos.Y, pos.Z))) continue;
+                        if (ChunkManager.chunks[new Vector2(posX - 1, posY)].HasBlockAt(new Vector3(width - 1, pos.Y, pos.Z))) continue;
                     }
                     else continue;
                 }
                 if (neighborPos.X == width)
                 {
-                    if (Game1.chunks.ContainsKey(new Vector2(posX + 1, posY)))
+                    if (ChunkManager.chunks.ContainsKey(new Vector2(posX + 1, posY)))
                     {
-                        if (Game1.chunks[new Vector2(posX + 1, posY)].HasBlockAt(new Vector3(0, pos.Y, pos.Z))) continue;
+                        if (ChunkManager.chunks[new Vector2(posX + 1, posY)].HasBlockAt(new Vector3(0, pos.Y, pos.Z))) continue;
                     }
                     else continue;
                 }
                 if (neighborPos.Z < 0)
                 {
-                    if (Game1.chunks.ContainsKey(new Vector2(posX, posY - 1)))
+                    if (ChunkManager.chunks.ContainsKey(new Vector2(posX, posY - 1)))
                     {
-                        if (Game1.chunks[new Vector2(posX, posY - 1)].HasBlockAt(new Vector3(pos.X, pos.Y, depth - 1))) continue;
+                        if (ChunkManager.chunks[new Vector2(posX, posY - 1)].HasBlockAt(new Vector3(pos.X, pos.Y, depth - 1))) continue;
                     }
                     else continue;
                 }
                 if (neighborPos.Z == depth)
                 {
-                    if (Game1.chunks.ContainsKey(new Vector2(posX, posY + 1)))
+                    if (ChunkManager.chunks.ContainsKey(new Vector2(posX, posY + 1)))
                     {
-                        if (Game1.chunks[new Vector2(posX, posY + 1)].HasBlockAt(new Vector3(pos.X, pos.Y, 0))) continue;
+                        if (ChunkManager.chunks[new Vector2(posX, posY + 1)].HasBlockAt(new Vector3(pos.X, pos.Y, 0))) continue;
                     }
                     else continue;
                 }
@@ -199,8 +201,16 @@ public class Chunk
             View = Game1.camera.viewMatrix,
             Projection = Game1.camera.projectionMatrix,
             TextureEnabled = true,
-            Texture = TextureAtlas.atlas
+            Texture = TextureAtlas.atlas,
         };
+
+        if (Settings.fog)
+        {
+            effect.FogEnabled = true;
+            effect.FogColor = Color.CornflowerBlue.ToVector3();
+            effect.FogStart = 10f;
+            effect.FogEnd = Globals.fogDistance;
+        }
 
         foreach (EffectPass pass in effect.CurrentTechnique.Passes)
         {

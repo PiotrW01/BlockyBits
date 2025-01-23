@@ -13,10 +13,6 @@ public class Player: GameObject
 
     public override void Start()
     {
-        /*collider = new Collider();
-        collider.SetOwner(this);
-        collider.SetSize(1, 1, 1);*/
-
         camera = Game1.camera;
         children.Add(camera);
         camera.localPos = Vector3.Up;
@@ -39,10 +35,6 @@ public class Player: GameObject
         }
     }
 
-    public override void Render()
-    {
-        //collider.Draw();
-    }
 
     public override void Update(float deltaTime)
     {

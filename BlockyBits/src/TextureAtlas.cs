@@ -19,7 +19,12 @@ public static class TextureAtlas
         TextureAtlas.atlas = atlas;
         horizontalOffset = (float)Block.blockResolution / (float)atlas.Width;
         verticalOffset = (float)Block.blockResolution / (float)atlas.Height;
+        
     }
 
+    public static Rectangle GetTextureAt(int x, int y)
+    {
+        return new Rectangle(x * Block.blockResolution, y * Block.blockResolution, Block.blockResolution, Block.blockResolution);
+    }
 
 }

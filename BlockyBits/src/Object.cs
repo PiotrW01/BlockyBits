@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
 public abstract class Object
@@ -11,7 +12,6 @@ public abstract class Object
     public Object parent = null;
     public List<Object> children = new List<Object>();
     public List<Component> components = new List<Component>();
-    public Collider collider = null;
     
     public virtual void Start() { }
     public virtual void Render() { }
@@ -28,10 +28,6 @@ public abstract class Object
         {
             c.Update(deltaTime);
         }
-        if (collider != null)
-        {
-            collider.Update(deltaTime);
-        }
     }
 
     public void ComponentStart()
@@ -40,20 +36,12 @@ public abstract class Object
         {
             c.Start();
         }
-        if(collider != null)
-        {
-            collider.Start();
-        }
     }
     public void HandleComponentInput(float deltaTime)
     {
         foreach(var component in components)
         {
             component.HandleInput(deltaTime);
-        }
-        if (collider != null)
-        {
-            collider.HandleInput(deltaTime);
         }
     }
 
@@ -62,10 +50,6 @@ public abstract class Object
         foreach (var component in components)
         {
             component.HandleMouseInput(deltaTime, mouseVec);
-        }
-        if (collider != null)
-        {
-            collider.HandleMouseInput(deltaTime, mouseVec);
         }
     }
 
@@ -79,4 +63,15 @@ public abstract class Object
 
     }
 
+    public virtual void OnDelete()
+    {
+
+    }
+
+    public void AddComponent<T>() where T : Component, new()
+    {
+        T c = new T();
+        c.SetOwner(this);
+        components.Add(c);
+    }
 }

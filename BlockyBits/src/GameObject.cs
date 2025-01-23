@@ -1,9 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System.Diagnostics;
-using System.Net.Mime;
 
 public class GameObject: Object
 {
@@ -32,7 +29,6 @@ public class GameObject: Object
             }
             mesh.Draw();
         }
-        collider.Draw();
     }
 
     public override void Update(float deltaTime)
@@ -43,21 +39,11 @@ public class GameObject: Object
     public override void LoadContent(ContentManager cm)
     {
         model = cm.Load<Model>("cube");
-        collider.SetSize(1, 1, 1);
-
-
 
 
         foreach (var c in components)
         {
             c.LoadContent();
         }
-    }
-
-    public void AddComponent<T>() where T : Component, new()
-    {
-        T c = new T();
-        c.SetOwner(this);
-        components.Add(c);
     }
 }

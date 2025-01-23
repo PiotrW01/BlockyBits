@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlockyBitsClient.src.Managers;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,7 +40,7 @@ internal class Utils
     public static Vector3 WorldToGridCoord(Vector3 pos)
     {
         Vector2 chunkPos = new Vector2((int)(pos.X / Chunk.width), (int)(pos.Y / Chunk.depth));
-        Chunk chunk = Game1.chunks[chunkPos];
+        Chunk chunk = ChunkManager.chunks[chunkPos];
         chunk.HasBlockAt(pos);
         return new Vector3();
     }
@@ -69,7 +70,7 @@ internal class Utils
             chunkPos.Y = (int)pos.Z / Chunk.depth;
         }
 
-        Game1.chunks.TryGetValue(chunkPos, out Chunk chunk);
+        ChunkManager.chunks.TryGetValue(chunkPos, out Chunk chunk);
         if(chunk != null)
         {
             bool has = chunk.HasBlockAt(new Vector3(x, pos.Y, z));

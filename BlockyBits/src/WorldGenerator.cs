@@ -15,13 +15,6 @@ namespace BlockyBits.src
             SimplexNoise.Noise.Seed = seed;
         }
 
-
-
-
-
-
-
-
         public Chunk GenerateChunk(int x, int y)
         {
             int xOffset, yOffset;

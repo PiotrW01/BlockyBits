@@ -32,6 +32,7 @@ public class Camera: Object
 
     public override void HandleMouseInput(float deltaTime, Vector2 mouseVec)
     {
+        if (!Game1.game.mouseLocked) return;
         rotation.Y += mouseVec.X * deltaTime;
         rotation.X += mouseVec.Y * deltaTime;
         float pitch = Utils.DegToRad(maxPitch);
