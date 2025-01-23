@@ -17,7 +17,7 @@ public class Chunk
     private Dictionary<Vector3, Block> blocks = new();
     private VertexBuffer vertexBuffer;
     private IndexBuffer indexBuffer;
-    private int vertexCount = 0;
+    public int vertexCount = 0;
     private int indexCount = 0;
 
     private static readonly Vector3[] faceNormals = {
@@ -46,6 +46,16 @@ public class Chunk
         GenerateBlocks();
         GenerateMesh();
     }
+
+    public Chunk(int posX, int posY, Dictionary<Vector3, Block> blocks)
+    {
+        this.posX = posX;
+        this.posY = posY;
+        this.blocks = blocks;
+        //GenerateMesh();
+    }
+
+
     private void GenerateBlocks()
     {
         blocks.Add(new Vector3(0, 2 ,0), new Block(Block.Type.Dirt));
@@ -63,9 +73,9 @@ public class Chunk
         }
     }
 
-    public bool HasBlockAt(Vector3 pos)
+    public bool HasBlockAt(Vector3 localPos)
     {
-        return blocks.ContainsKey(pos);
+        return blocks.ContainsKey(localPos);
     }
 
     public Block GetBlockAtGlobalPos(Vector3 pos)
@@ -108,9 +118,41 @@ public class Chunk
             {
                 Vector3 neighborPos = pos + faceNormals[face];
                 if (blocks.ContainsKey(neighborPos)) continue;
-                int startIndex = texCoords.Count;
-                Debug.WriteLine($"Face {face}: startIndex={startIndex}");
+                if (neighborPos.X < 0)
+                {
+                    if (Game1.chunks.ContainsKey(new Vector2(posX - 1, posY)))
+                    {
+                        if (Game1.chunks[new Vector2(posX - 1, posY)].HasBlockAt(new Vector3(width - 1, pos.Y, pos.Z))) continue;
+                    }
+                    else continue;
+                }
+                if (neighborPos.X == width)
+                {
+                    if (Game1.chunks.ContainsKey(new Vector2(posX + 1, posY)))
+                    {
+                        if (Game1.chunks[new Vector2(posX + 1, posY)].HasBlockAt(new Vector3(0, pos.Y, pos.Z))) continue;
+                    }
+                    else continue;
+                }
+                if (neighborPos.Z < 0)
+                {
+                    if (Game1.chunks.ContainsKey(new Vector2(posX, posY - 1)))
+                    {
+                        if (Game1.chunks[new Vector2(posX, posY - 1)].HasBlockAt(new Vector3(pos.X, pos.Y, depth - 1))) continue;
+                    }
+                    else continue;
+                }
+                if (neighborPos.Z == depth)
+                {
+                    if (Game1.chunks.ContainsKey(new Vector2(posX, posY + 1)))
+                    {
+                        if (Game1.chunks[new Vector2(posX, posY + 1)].HasBlockAt(new Vector3(pos.X, pos.Y, 0))) continue;
+                    }
+                    else continue;
+                }
+                if (neighborPos.Y < 0) continue;
 
+                int startIndex = texCoords.Count;
                 Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
                 Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
                 Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
@@ -130,7 +172,6 @@ public class Chunk
         }
         vertexCount = texCoords.Count;
         indexCount = indices.Count;
-        Debug.WriteLine($"Vertices: {vertexCount}, Indices: {indexCount}");
         if (vertexCount == 0 || indexCount == 0) return;
 
         vertexBuffer = new VertexBuffer(Game1.game.GraphicsDevice, typeof(VertexPositionTexture), vertexCount, BufferUsage.WriteOnly);

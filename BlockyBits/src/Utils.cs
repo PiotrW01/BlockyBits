@@ -77,11 +77,84 @@ internal class Utils
             //Debug.WriteLine($"collision at chunk [{chunkPos.X},{chunkPos.Y}], X:{x}, Z:{z}, collision:{has}");
             if (has)
             {
-                Debug.WriteLine("collided");
+                //Debug.WriteLine("collided");
             }
             return chunk.HasBlockAt(new Vector3(x, (int)pos.Y, z));
         }
         return false;
+    }
+    
+    public static Vector2 GetChunkAt(Vector3 pos)
+    {
+        Vector2 chunkPos = Vector2.Zero;
+
+        if (pos.X < 0)
+        {
+            chunkPos.X = (int)Math.Floor(pos.X / Chunk.width);
+        }
+        else
+        {
+            chunkPos.X = (int)pos.X / Chunk.width;
+        }
+
+        if (pos.Z < 0)
+        {
+            chunkPos.Y = (int)Math.Floor(pos.Z / Chunk.depth);
+        }
+        else
+        {
+            chunkPos.Y = (int)pos.Z / Chunk.depth;
+        }
+        return chunkPos;
+    }
+
+    public static Vector3 GetPlayerGlobalPos()
+    {
+        Vector3 pos = Game1.player.pos;
+        int x, z;
+        //Vector2 chunkPos;
+        if (pos.X < 0)
+        {
+            x = 16 + (int)Math.Floor(pos.X % Chunk.width);
+            //chunkPos.X = (int)Math.Floor(pos.X / Chunk.width);
+        }
+
+        if (pos.Z < 0)
+        {
+            z = 16 + (int)Math.Floor(pos.Z % Chunk.depth);
+            //chunkPos.Y = (int)Math.Floor(pos.Z / Chunk.depth);
+        }
+
+        return new Vector3((int)pos.X, (int)pos.Y, (int)pos.Z);
+    }
+
+    public static Vector2 GetPlayerChunkPos()
+    {
+        Vector3 pos = Game1.player.pos;
+        int x, z;
+        //Vector2 chunkPos;
+        if (pos.X < 0)
+        {
+            x = 16 + (int)Math.Floor(pos.X % Chunk.width);
+            //chunkPos.X = (int)Math.Floor(pos.X / Chunk.width);
+        }
+        else
+        {
+            x = (int)pos.X % Chunk.width;
+            //chunkPos.X = (int)pos.X / Chunk.width;
+        }
+
+        if (pos.Z < 0)
+        {
+            z = 16 + (int)Math.Floor(pos.Z % Chunk.depth);
+            //chunkPos.Y = (int)Math.Floor(pos.Z / Chunk.depth);
+        }
+        else
+        {
+            z = (int)pos.Z % Chunk.depth;
+            //chunkPos.Y = (int)pos.Z / Chunk.depth;
+        }
+        return new Vector2(x, z);
     }
 
     public static Vector3 GridToWorldCoord(Vector3 pos)
@@ -95,5 +168,11 @@ internal class Utils
         var t2 = t * t;
         return a + (b - a) * (3 - 2 * t) * t2;
     }
+
+    public static float Map(float value, float fromMin, float fromMax, float toMin, float toMax)
+    {
+        return (value - fromMin) / (fromMax - fromMin) * (toMax - toMin) + toMin;
+    }
+
 }
 

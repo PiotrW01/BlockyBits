@@ -74,10 +74,10 @@ internal class Movement: Component
             //velocity = Vector3.Lerp(velocity, direction * maxSpeed, deltaTime * acceleration);
             velocity = Utils.EaseInOut(velocity, direction * maxSpeed, deltaTime * acceleration);
         }
-        if (Utils.CollidesWithBlockAt(owner.pos + velocity))
+/*        if (Utils.CollidesWithBlockAt(owner.pos + velocity))
         {
             velocity = Vector3.Zero;
-        }
+        }*/
         owner.pos += velocity;
     }
 

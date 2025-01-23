@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-internal class Player: GameObject
+public class Player: GameObject
 {
     private Camera camera;
     bool thirdPerson = false;
 
     public override void Start()
     {
-        collider = new Collider();
+        /*collider = new Collider();
         collider.SetOwner(this);
-        collider.SetSize(1, 1, 1);
+        collider.SetSize(1, 1, 1);*/
 
         camera = Game1.camera;
         children.Add(camera);
@@ -25,7 +25,7 @@ internal class Player: GameObject
 
     public override void HandleInput(float deltaTime)
     {
-        if (Keyboard.GetState().IsKeyDown(Keys.F5))
+        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F5))
         {
             thirdPerson = !thirdPerson;
             if (thirdPerson)
@@ -41,7 +41,7 @@ internal class Player: GameObject
 
     public override void Render()
     {
-        collider.Draw();
+        //collider.Draw();
     }
 
     public override void Update(float deltaTime)

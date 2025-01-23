@@ -1,9 +1,12 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlockyBits.src;
+using BlockyBitsCommon;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Sockets;
 
 public class Game1 : Game
 {
@@ -15,7 +18,13 @@ public class Game1 : Game
     public static Dictionary<Vector2, Chunk> chunks = new();
     public double elapsedTime = 0f;
     public static Game1 game;
+    public static Player player;
+    public TcpClient client;
     SpriteFont font;
+    int frameCounter = 0;
+    int fps = 0;
+    double timeSinceLastUpdate = 0;
+
 
     public Game1()
     {
@@ -37,13 +46,17 @@ public class Game1 : Game
         _graphics.PreferredBackBufferWidth = 1280;
         _graphics.ApplyChanges();
 
-        gameObjects.Add(new Player());
+        player = new Player();
+        gameObjects.Add(player);
 
         foreach (Object obj in gameObjects) 
         {
             obj.Start();
             obj.ComponentStart();
         }
+
+        client = new TcpClient("localhost", Network.serverPort);
+
 
 
         screenCenter = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
@@ -58,24 +71,45 @@ public class Game1 : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
         LoadObjectContent();
         font = Content.Load<SpriteFont>("font");
-        chunks.Add(new Vector2(0, 0), new Chunk(0, 0));
-        chunks.Add(new Vector2(0, 1), new Chunk(0, 1));
-        chunks.Add(new Vector2(-1, 0), new Chunk(-1, 0));
-        chunks.Add(new Vector2(0, -1), new Chunk(0, -1));
-        chunks.Add(new Vector2(-1, -1), new Chunk(-1, -1));
+        WorldGenerator gen = new(42);
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                chunks.Add(new Vector2(i,j),gen.GenerateChunk(i, j));
+            }
+        }
 
+        int vertices = 0;
+        foreach (Chunk chunk in chunks.Values)
+        {
+            chunk.GenerateMesh();
+            vertices += chunk.vertexCount;
+        }
+        Debug.WriteLine(vertices);
     }
 
     protected override void Update(GameTime gameTime)
     {
+        timeSinceLastUpdate += gameTime.ElapsedGameTime.TotalSeconds;
+        frameCounter++;
+        if(timeSinceLastUpdate >= 1)
+        {
+            fps = frameCounter;
+            frameCounter = 0;
+            timeSinceLastUpdate = 0;
+        }
+        
+        
         elapsedTime = gameTime.TotalGameTime.TotalSeconds;
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Microsoft.Xna.Framework.Input.Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
         float delta = ((float)gameTime.ElapsedGameTime.TotalSeconds);
         HandleInput(delta);
         UpdateObjects(delta);
 
+        
 
         base.Update(gameTime);
     }
@@ -94,14 +128,13 @@ public class Game1 : Game
             GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             obj.Render();
         }
-
         foreach(Chunk chunk in chunks.Values)
         {
             chunk.Render();
         }
 
         _spriteBatch.Begin();
-        _spriteBatch.DrawString(font, "hello!", new Vector2(20, 20), Color.White);
+        RenderDebugInfo();
         _spriteBatch.End();
 
         base.Draw(gameTime);
@@ -110,7 +143,27 @@ public class Game1 : Game
     private void HandleInput(float delta)
     {
         BlockyBits.src.Keyboard.UpdateKeyState();
-        if (Keyboard.GetState().GetPressedKeyCount() > 0)
+        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F11))
+        {
+            if (_graphics.IsFullScreen)
+            {
+                _graphics.PreferredBackBufferHeight = 720;
+                _graphics.PreferredBackBufferWidth = 1280;
+            } else
+            {
+                _graphics.HardwareModeSwitch = false;
+                _graphics.PreferredBackBufferHeight = 1080;
+                _graphics.PreferredBackBufferWidth = 1920;
+            }
+            _graphics.ToggleFullScreen();
+            _graphics.ApplyChanges();
+        }
+        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F3))
+        {
+            Debugger.showDebugInfo = !Debugger.showDebugInfo;
+        }
+
+        if (Microsoft.Xna.Framework.Input.Keyboard.GetState().GetPressedKeyCount() > 0)
         {
             foreach (Object obj in gameObjects)
             {
@@ -136,7 +189,7 @@ public class Game1 : Game
     {
         foreach (Object obj in gameObjects)
         {
-            obj.ForceUpdate(delta);
+            obj.UpdateChildrenAndComponents(delta);
             obj.Update(delta);
         }
     }
@@ -146,5 +199,13 @@ public class Game1 : Game
         {
             obj.LoadContent(Content);
         }
+    }
+
+    private void RenderDebugInfo()
+    {
+        if (!Debugger.showDebugInfo) return;
+        _spriteBatch.DrawString(font, $"Fps: {fps}", new Vector2(20, 20), Color.White);
+        _spriteBatch.DrawString(font, $"Coords: {{X: {player.pos.X.ToString("F0")}, Y: {player.pos.Y.ToString("F0")}, Z: {player.pos.Z.ToString("F0")}}}", new Vector2(20, 40), Color.White);
+        _spriteBatch.DrawString(font, $"Chunk coords: {Utils.GetPlayerChunkPos()} at chunk: {Utils.GetChunkAt(player.pos)}", new Vector2(20, 60), Color.White);
     }
 }

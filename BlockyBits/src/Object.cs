@@ -12,17 +12,17 @@ public abstract class Object
     public List<Object> children = new List<Object>();
     public List<Component> components = new List<Component>();
     public Collider collider = null;
-
-
+    
     public virtual void Start() { }
     public virtual void Render() { }
     public virtual void Update(float deltaTime) { }
 
-    public void ForceUpdate(float deltaTime)
+    public void UpdateChildrenAndComponents(float deltaTime)
     {
         foreach (var child in children)
         {
             child.pos = pos + child.localPos;
+            child.UpdateChildrenAndComponents(deltaTime);
         }
         foreach (var c in components)
         {

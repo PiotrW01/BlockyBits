@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 internal class Debugger
 {
     private static GraphicsDevice gd;
+    public static bool showDebugInfo = false;
 
     public static void Enable(GraphicsDevice gd)
     {

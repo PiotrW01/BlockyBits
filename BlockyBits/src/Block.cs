@@ -1,9 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 
 public class Block(Block.Type type)
 {
@@ -43,12 +39,6 @@ public class Block(Block.Type type)
     public static Vector2[] GetUVs(Block.Type blockType)
     {
         Vector2[] UVs = blockUVs[blockType];
-
-
-
-
-
-
         return blockUVs[blockType];
     }
 }
