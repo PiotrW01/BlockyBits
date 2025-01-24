@@ -15,7 +15,8 @@ namespace BlockyBitsClient.src.Managers
             gameObjects.Add(ob);
             ob.LoadContent(Game1.game.Content);
             ob.Start();
-            ob.ComponentStart();
+            ob.ChildrenStart(Game1.game.Content);
+            ob.ComponentsStart(Game1.game.Content);
         }
 
         public static void DeleteObject(Object ob)
@@ -30,6 +31,7 @@ namespace BlockyBitsClient.src.Managers
                 //BoundingFrustum frustum = new(camera.viewMatrix * camera.projectionMatrix);
                 Game1.game.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 obj.Render();
+                obj.RenderChildren();
             }
         }
 
@@ -38,6 +40,7 @@ namespace BlockyBitsClient.src.Managers
             foreach(Object obj in objectsToDelete)
             {
                 obj.OnDelete();
+                obj.OnDeleteChildrenAndComponents();
                 gameObjects.Remove(obj);
             }
             objectsToDelete.Clear();
@@ -56,6 +59,7 @@ namespace BlockyBitsClient.src.Managers
             {
                 obj.HandleInput(delta);
                 obj.HandleComponentInput(delta);
+                obj.HandleChildrenInput(delta);
             }
         }
 
@@ -65,6 +69,7 @@ namespace BlockyBitsClient.src.Managers
             {
                 obj.HandleMouseInput(delta, mouseVec);
                 obj.HandleComponentMouseInput(delta, mouseVec);
+                obj.HandleChildrenMouseInput(delta, mouseVec);
             }
         }
     }

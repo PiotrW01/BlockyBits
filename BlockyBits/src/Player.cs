@@ -18,8 +18,10 @@ public class Player: GameObject
         camera.localPos = Vector3.Up;
         AddComponent<Movement>();
         Collider collider = new Collider();
-        collider.SetSize(1,1,1);
+        collider.SetSize(0.9f,0.9f,1);
         AddComponent(collider);
+        AddComponent(new Collider());
+        AddComponent<Collider>();
     }
 
     public override void HandleInput(float deltaTime)

@@ -39,11 +39,5 @@ public class GameObject: Object
     public override void LoadContent(ContentManager cm)
     {
         model = cm.Load<Model>("cube");
-
-
-        foreach (var c in components)
-        {
-            c.LoadContent();
-        }
     }
 }

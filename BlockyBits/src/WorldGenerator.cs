@@ -28,7 +28,7 @@ namespace BlockyBits.src
                 {
                     float value = SimplexNoise.Noise.CalcPixel2D(xOffset + i, yOffset + j, 0.01f);
                     //value = Utils.Map(value, 0, 1, 0, Chunk.height);
-                    value /= 2f;
+                    value /= 4f;
                     for (int k = 0; k <= value; k++)
                     {
                         blocks.Add(new Vector3(i,k,j), new Block(Block.Type.Dirt));

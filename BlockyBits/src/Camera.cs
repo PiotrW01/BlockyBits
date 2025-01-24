@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlockyBitsClient.src;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -33,15 +34,14 @@ public class Camera: Object
     public override void HandleMouseInput(float deltaTime, Vector2 mouseVec)
     {
         if (!Game1.game.mouseLocked) return;
-        rotation.Y += mouseVec.X * deltaTime;
-        rotation.X += mouseVec.Y * deltaTime;
+        rotation.Y += mouseVec.X * deltaTime * Settings.mouseSensitivity;
+        rotation.X += mouseVec.Y * deltaTime * Settings.mouseSensitivity;
         float pitch = Utils.DegToRad(maxPitch);
         rotation.X = Math.Clamp(rotation.X, -pitch, pitch);
     }
 
     private void UpdateViewMatrix()
     {
-
         Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(rotation.Y, rotation.X, 0);
         forward = Vector3.Transform(Vector3.Forward, rotationMatrix);
         viewMatrix = Matrix.CreateLookAt(pos, pos + forward, cameraUp);

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ public abstract class Component
 
     public virtual void Update(float deltaTime) { }
 
-    public virtual void LoadContent() { }
+    public virtual void LoadContent(ContentManager cm) { }
 
     public virtual void HandleInput(float deltaTime) { }
 
@@ -21,5 +22,10 @@ public abstract class Component
     public void SetOwner(Object owner)
     {
         this.owner = owner;
+    }
+
+    public virtual void OnDelete()
+    {
+
     }
 }
