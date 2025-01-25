@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockyBitsCommon", "BlockyB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockyBitsServer", "BlockyBitsServer\BlockyBitsServer.csproj", "{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{561A7A84-B295-44E6-9E7D-B865976248E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC814629-CF51-43B7-B8EF-C6AE5A7DEB6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{561A7A84-B295-44E6-9E7D-B865976248E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{561A7A84-B295-44E6-9E7D-B865976248E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{561A7A84-B295-44E6-9E7D-B865976248E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{561A7A84-B295-44E6-9E7D-B865976248E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

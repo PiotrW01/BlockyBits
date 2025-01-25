@@ -28,10 +28,13 @@ namespace BlockyBits.src
                 {
                     float value = SimplexNoise.Noise.CalcPixel2D(xOffset + i, yOffset + j, 0.01f);
                     //value = Utils.Map(value, 0, 1, 0, Chunk.height);
-                    value /= 4f;
+                    value /= 8f;
                     for (int k = 0; k <= value; k++)
                     {
-                        blocks.Add(new Vector3(i,k,j), new Block(Block.Type.Dirt));
+                        if(k < 16)
+                        {
+                            blocks.Add(new Vector3(i,k,j), new Block(Block.Type.Stone));
+                        } else blocks.Add(new Vector3(i, k, j), new Block(Block.Type.Dirt));
                     }
                 }
             }

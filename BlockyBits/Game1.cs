@@ -43,6 +43,7 @@ public class Game1 : Game
     {
         camera = new Camera(GraphicsDevice);
         ObjectManager.Add(camera);
+        ChunkManager.Start();
         Debugger.Enable(GraphicsDevice);
         _graphics.PreferredBackBufferHeight = 720;
         _graphics.PreferredBackBufferWidth = 1280;
@@ -57,7 +58,7 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         spriteBatch = new SpriteBatch(GraphicsDevice);
-        TextureAtlas.SetAtlas(Content.Load<Texture2D>("textures/texture_atlas"));
+        TextureAtlas.LoadAtlas(Content);
         Globals.LoadContent(Content);
         Block.InitializeBlocks();
         GUIManager.RegisterUIElement(new MainMenu());
@@ -81,7 +82,7 @@ public class Game1 : Game
         float delta = ((float)gameTime.ElapsedGameTime.TotalSeconds);
         HandleInput(delta);
         ObjectManager.UpdateObjects(delta);
-
+        ChunkManager.UpdateChunks();
         
 
         base.Update(gameTime);
@@ -97,11 +98,10 @@ public class Game1 : Game
         };
         ChunkManager.RenderChunks();
 
-
         ObjectManager.RenderObjects();
+        Debugger.DrawDebugLines();
         spriteBatch.Begin();
         RenderDebugInfo();
-        Debugger.DrawDebugLines();
         spriteBatch.End();
         GUIManager.RenderGUI(spriteBatch);
 
@@ -161,30 +161,14 @@ public class Game1 : Game
     {
         if (!Debugger.showDebugInfo || player == null) return;
         spriteBatch.DrawString(Globals.font, $"Fps: {fps}", new Vector2(20, 20), Color.White);
-        spriteBatch.DrawString(Globals.font, $"Coords: {{X: {player.pos.X.ToString("F0")}, Y: {player.pos.Y.ToString("F0")}, Z: {player.pos.Z.ToString("F0")}}}", new Vector2(20, 40), Color.White);
-        spriteBatch.DrawString(Globals.font, $"Chunk coords: {Utils.GetPlayerChunkPos()} at chunk: {Utils.GetChunkAt(player.pos)}", new Vector2(20, 60), Color.White);
+        spriteBatch.DrawString(Globals.font, $"Coords: {{X: {player.pos.X.ToString("F2")}, Y: {player.pos.Y.ToString("F2")}, Z: {player.pos.Z.ToString("F2")}}}", new Vector2(20, 40), Color.White);
+        spriteBatch.DrawString(Globals.font, $"Chunk coords: {Utils.GetPlayerChunkPos()} at chunk: {Utils.WorldToChunkCoord(player.pos)}", new Vector2(20, 60), Color.White);
     }
 
     public void StartGame()
     {
         player = new Player();
+        player.pos = new Vector3(33, 62, 70);
         ObjectManager.Add(player);
-
-        WorldGenerator gen = new(42);
-        for (int i = 0; i < 10; i++)
-        {
-            for (int j = 0; j < 10; j++)
-            {
-                ChunkManager.chunks.Add(new Vector2(i, j), gen.GenerateChunk(i, j));
-            }
-        }
-
-        int vertices = 0;
-        foreach (Chunk chunk in ChunkManager.chunks.Values)
-        {
-            chunk.GenerateMesh();
-            vertices += chunk.vertexCount;
-        }
-        Debug.WriteLine(vertices);
     }
 }

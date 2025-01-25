@@ -5,10 +5,12 @@ using System.Collections.Generic;
 
 namespace BlockyBitsClient.src.Managers
 {
-    internal static class ObjectManager
+    public static class ObjectManager
     {
         static List<Object> gameObjects = new();
         static List<Object> objectsToDelete = new();
+        //public static event Action onObjectAdded;
+        //public static event Action onObjectRemoved;
 
         public static void Add(Object ob)
         {

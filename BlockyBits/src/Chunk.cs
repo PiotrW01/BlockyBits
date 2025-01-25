@@ -9,6 +9,10 @@ using System.Diagnostics;
 
 public class Chunk
 {
+
+    public BoundingBox boundingBox;
+    public Vector2 pos;
+
     public int posX;
     public int posY;
 
@@ -21,6 +25,13 @@ public class Chunk
     private IndexBuffer indexBuffer;
     public int vertexCount = 0;
     private int indexCount = 0;
+
+    private static BasicEffect effect = new(Game1.game.GraphicsDevice)
+    {
+        VertexColorEnabled = false,
+        Projection = Game1.camera.projectionMatrix,
+        TextureEnabled = true,
+    };
 
     private static readonly Vector3[] faceNormals = {
         new Vector3( 0,  0, -1), // Front
@@ -41,19 +52,22 @@ public class Chunk
         { new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 0, 0), new Vector3(0, 0, 0) },  // Bottom
     };
 
-    public Chunk(int posX, int posY)
+/*    public Chunk(int posX, int posY)
     {
         this.posX = posX;
         this.posY = posY;
         GenerateBlocks();
         GenerateMesh();
-    }
+    }*/
 
     public Chunk(int posX, int posY, Dictionary<Vector3, Block> blocks)
     {
         this.posX = posX;
         this.posY = posY;
+        this.pos = new Vector2(posX, posY);
         this.blocks = blocks;
+        this.boundingBox = new(new Vector3(posX * width, 0, posY * depth),
+                               new Vector3(posX * width + width, height, posY * depth + depth));
         //GenerateMesh();
     }
 
@@ -110,11 +124,13 @@ public class Chunk
 
         //Vector3 cameraDir = Game1.camera.pos - new Vector3(posX * width, 0, posY * depth);
         //cameraDir.Normalize();
-
+        int highestPoint = 0;
         foreach(var pos in blocks.Keys)
         {
             Block block = blocks[pos];
             Vector2[] blockUVs = Block.GetUVs(block.type);
+
+            if (pos.Y > highestPoint) highestPoint = (int)pos.Y;
 
             for (int face = 0; face < 6; face++)
             {
@@ -176,33 +192,54 @@ public class Chunk
         indexCount = indices.Count;
         if (vertexCount == 0 || indexCount == 0) return;
 
+        if(vertexBuffer != null)
+        {
+            vertexBuffer.Dispose();
+        }
         vertexBuffer = new VertexBuffer(Game1.game.GraphicsDevice, typeof(VertexPositionTexture), vertexCount, BufferUsage.WriteOnly);
         vertexBuffer.SetData(texCoords.ToArray());
 
+        if(indexBuffer != null)
+        {
+            indexBuffer.Dispose();
+        }
         indexBuffer = new IndexBuffer(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indexCount, BufferUsage.WriteOnly);
         indexBuffer.SetData(indices.ToArray());
+
+        boundingBox.Max.Y = highestPoint + 2;
     }
 
     public void Render()
     {
         if (vertexBuffer == null || indexBuffer == null) return;
-        //Vector3 chunkPos = new Vector3(posX * width, Game1.camera.pos.Y, posY * depth);
-        //Vector3 c = chunkPos - Game1.camera.pos;
-        //Vector3 n = Game1.camera.forward;
-        //n.Normalize();
-        //c.Normalize();
-        //float dot = Vector3.Dot(n, c);
-        //if (dot < 0f) return;
-        //Debug.WriteLine($"Visible at {posX}, {posY}, {Game1.game.elapsedTime}");
-        BasicEffect effect = new BasicEffect(Game1.game.GraphicsDevice)
+        /*        BasicEffect effect = new BasicEffect(Game1.game.GraphicsDevice)
+                {
+                    VertexColorEnabled = false,
+                    World = Matrix.CreateWorld(new Vector3(posX * width, 0, posY * depth), Vector3.Forward, Vector3.Up),
+                    View = Game1.camera.viewMatrix,
+                    Projection = Game1.camera.projectionMatrix,
+                    TextureEnabled = true,
+                };*/
+
+        effect.World = Matrix.CreateWorld(new Vector3(posX * width, 0, posY * depth), Vector3.Forward, Vector3.Up);
+        effect.View = Game1.camera.viewMatrix;
+        float distance = Vector2.Distance(pos * width, new Vector2(Game1.camera.pos.X, Game1.camera.pos.Z));
+        if(pos == Utils.WorldToChunkCoord(Game1.camera.pos))
         {
-            VertexColorEnabled = false,
-            World = Matrix.CreateWorld(new Vector3(posX * width, 0, posY * depth), Vector3.Forward, Vector3.Up),
-            View = Game1.camera.viewMatrix,
-            Projection = Game1.camera.projectionMatrix,
-            TextureEnabled = true,
-            Texture = TextureAtlas.atlas,
-        };
+            Debugger.QueueDraw(boundingBox);
+        }
+        
+        if (distance < 64)
+        {
+            effect.Texture = TextureAtlas.atlas;
+        } else if(distance < 128)
+        {
+            effect.Texture = TextureAtlas.atlas_medium;
+        }
+        else
+        {
+            effect.Texture = TextureAtlas.atlas_far;
+        }
 
         if (Settings.fog)
         {
@@ -220,6 +257,22 @@ public class Chunk
             Game1.game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, indexCount / 3);
         }
 
+    }
+
+    public void Dispose()
+    {
+        if (vertexBuffer != null)
+        {
+            vertexBuffer.Dispose();
+            vertexBuffer = null;
+        }
+        if (indexBuffer != null)
+        {
+            indexBuffer.Dispose();
+            indexBuffer = null;
+        }
+        blocks.Clear();
+        blocks = null;
     }
 }
 

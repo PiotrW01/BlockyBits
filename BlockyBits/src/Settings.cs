@@ -8,8 +8,8 @@ namespace BlockyBitsClient.src
 {
     internal static class Settings
     {
-        public static int renderDistance = 8;
-        public static bool fog = true;
+        public static int renderDistance = 10;
+        public static bool fog = false;
         public static float mouseSensitivity = 0.1f;
 
     }
