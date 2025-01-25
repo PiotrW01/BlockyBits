@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlockyBitsClient.src;
+using BlockyBitsClient.src.Managers;
+using BlockyBitsClient.src.player;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -10,24 +13,29 @@ using System.Threading.Tasks;
 public class Player: GameObject
 {
     private Camera camera;
+    private Inventory inventory;
+    private Hotbar hotbar;
+
     bool thirdPerson = false;
 
     public override void Start()
     {
+        inventory = new Inventory(12);
+        hotbar = new Hotbar(9);
         camera = Game1.camera;
-        children.Add(camera);
         camera.localPos = Vector3.Up * 0.7f;
-        AddComponent<Movement>();
+
+        AddChild(hotbar);
+        AddChild(camera);
         Collider collider = new Collider();
         collider.SetSize(0.9f, 0.9f, 1.8f);
         AddComponent(collider);
-        AddComponent(new Collider());
-        AddComponent<Collider>();
+        AddComponent<Movement>();
     }
 
     public override void HandleInput(float deltaTime)
     {
-        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F5))
+        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.F5))
         {
             thirdPerson = !thirdPerson;
             if (thirdPerson)
@@ -40,7 +48,6 @@ public class Player: GameObject
             }
         }
     }
-
 
     public override void Update(float deltaTime)
     {

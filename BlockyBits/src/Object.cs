@@ -95,6 +95,17 @@ public abstract class Object
     // mouseVec is the relative position of the mouse to the screen center
     public virtual void HandleMouseInput(float deltaTime, Vector2 mouseVec) { }
 
+    public virtual void HandleScrollInput() { }
+
+    public void HandleChildrenScrollInput()
+    {
+        foreach(var child in children)
+        {
+            child.HandleScrollInput();
+            child.HandleChildrenScrollInput();
+        }
+    }
+
     public virtual void LoadContent(ContentManager cm)
     {
 
@@ -127,13 +138,19 @@ public abstract class Object
 
     }
 
+    public void AddChild(Object c)
+    {
+        c.parent = this;
+        children.Add(c);
+    }
+
     public void AddComponent(Component c)
     {
-        if(components.Any(component => component.GetType() == c.GetType()))
+/*        if(components.Any(component => component.GetType() == c.GetType()))
         {
             Debug.WriteLine($"Trying to assign component to object {GetType()} that already has this kind of component: {c.GetType()}");
             return;
-        }
+        }*/
 
         c.SetOwner(this);
         components.Add(c);
@@ -141,11 +158,11 @@ public abstract class Object
 
     public void AddComponent<T>() where T : Component, new()
     {
-        if (components.Any(component => component is T))
+/*        if (components.Any(component => component is T))
         {
             Debug.WriteLine($"Trying to assign component to object {GetType()} that already has this kind of component: {typeof(T)}");
             return;
-        }
+        }*/
 
         T c = new T();
         c.SetOwner(this);

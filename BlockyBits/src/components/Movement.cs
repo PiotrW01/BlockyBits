@@ -31,7 +31,7 @@ internal class Movement: Component
 
     public override void HandleInput(float deltaTime)
     {
-        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.L)) 
+        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.L)) 
         { 
             isFlying = !isFlying;
         }

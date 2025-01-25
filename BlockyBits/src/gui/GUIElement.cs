@@ -28,7 +28,7 @@ namespace BlockyBitsClient.src.gui
 
         public virtual void Ready()
         {
-
+            
         }
 
         public virtual void OnClickChanged()
@@ -41,12 +41,16 @@ namespace BlockyBitsClient.src.gui
            
         }
 
-        public virtual void OnScroll()
+        public virtual void OnScroll(int direction)
         {
 
         }
 
         public virtual void Render(SpriteBatch sb)
+        {
+
+        }
+        public virtual void OnInput()
         {
 
         }

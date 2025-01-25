@@ -110,11 +110,11 @@ public class Game1 : Game
 
     private void HandleInput(float delta)
     {
-        BlockyBits.src.Keyboard.UpdateKeyState();
+        BlockyBits.src.Input.UpdateState();
         GUIManager.CheckMouseEvents();
 
 
-        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F11))
+        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.F11))
         {
             if (_graphics.IsFullScreen)
             {
@@ -129,19 +129,24 @@ public class Game1 : Game
             _graphics.ToggleFullScreen();
             _graphics.ApplyChanges();
         }
-        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F3))
+        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.F3))
         {
             Debugger.showDebugInfo = !Debugger.showDebugInfo;
         }
 
-        if (BlockyBits.src.Keyboard.IsKeyJustPressed(Keys.F4))
+        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.F4))
         {
             mouseLocked = !mouseLocked;
         }
 
-        if (Microsoft.Xna.Framework.Input.Keyboard.GetState().GetPressedKeyCount() > 0)
+        if (Keyboard.GetState().GetPressedKeyCount() > 0)
         {
             ObjectManager.HandleInput(delta);
+        }
+
+        if(Input.GetScrollDirection() != 0)
+        {
+            ObjectManager.HandleScrollInput();
         }
 
         if (Mouse.GetState().Position != screenCenter && IsActive)

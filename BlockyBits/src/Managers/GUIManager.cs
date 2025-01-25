@@ -1,4 +1,5 @@
-﻿using BlockyBitsClient.src.gui;
+﻿using BlockyBits.src;
+using BlockyBitsClient.src.gui;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -12,13 +13,36 @@ namespace BlockyBitsClient.src.Managers
 {
     public static class GUIManager
     {
-        private static List<GUIElement> guiElements = new();
+        private static HashSet<GUIElement> guiElements = new();
         private static List<GUIElement> elementsToRemove = new();
         public static MouseState lastState = Mouse.GetState();
+/*        private static event Action OnScroll; // Maybe?
+        private static event Action OnInput;
+        private static event Action OnHover;
+        private static event Action OnClickChanged;*/
+
 
         public static void CheckMouseEvents()
         {
             MouseState state = Mouse.GetState();
+
+            if(Input.GetScrollDirection() != 0)
+            {
+                foreach (GUIElement el in guiElements)
+                {
+                    el.OnScroll(Input.GetScrollDirection());
+                }
+            }
+
+            if (Input.AnyKeyPressed())
+            {
+                foreach (GUIElement el in guiElements)
+                {
+                    el.OnInput();
+                }
+            }
+
+
             foreach (GUIElement element in guiElements)
             {
                 if (!element.isActive) continue;

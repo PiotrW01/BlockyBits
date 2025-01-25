@@ -4,15 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlockyBitsClient.src.gui
+namespace BlockyBitsClient.src
 {
-    internal class HorizontalContainer: GUIElement
+    public class Item
     {
-
-
-
-
-
+        public Sprite sprite;
+        
 
 
     }

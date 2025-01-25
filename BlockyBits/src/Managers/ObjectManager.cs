@@ -74,5 +74,14 @@ namespace BlockyBitsClient.src.Managers
                 obj.HandleChildrenMouseInput(delta, mouseVec);
             }
         }
+
+        public static void HandleScrollInput()
+        {
+            foreach (Object obj in gameObjects)
+            {
+                obj.HandleScrollInput();
+                obj.HandleChildrenScrollInput();
+            }
+        }
     }
 }
