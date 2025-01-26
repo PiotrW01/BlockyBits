@@ -1,5 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
-namespace Icaria.Engine.Procedural
+namespace BlockyBitsClient.src.Noise
 {
     public partial class IcariaNoise
     {
@@ -14,7 +14,7 @@ namespace Icaria.Engine.Procedural
             float z = xy * -0.5773502f;
             x += s2;
             y += s2;
-            
+
             // GradientNoise3D() won't get inlined automatically so its manually inlined here.
             // seems to improve preformance by around 5 to 10%
             int ix = x > 0 ? (int)x : (int)x - 1;
@@ -83,19 +83,19 @@ namespace Icaria.Engine.Procedural
         {
             // see comments in InterpolateGradients2D()
             int xHash, yHash, zHash;
-            xHash = (llHash & Const.GradAndMask) | Const.GradOrMask;
+            xHash = llHash & Const.GradAndMask | Const.GradOrMask;
             yHash = xHash << Const.GradShift1;
             zHash = xHash << Const.GradShift2;
             float llGrad = fx * *(float*)&xHash + fy * *(float*)&yHash + fz * *(float*)&zHash; // dot-product
-            xHash = (lrHash & Const.GradAndMask) | Const.GradOrMask;
+            xHash = lrHash & Const.GradAndMask | Const.GradOrMask;
             yHash = xHash << Const.GradShift1;
             zHash = xHash << Const.GradShift2;
             float lrGrad = (fx - 1) * *(float*)&xHash + fy * *(float*)&yHash + fz * *(float*)&zHash;
-            xHash = (ulHash & Const.GradAndMask) | Const.GradOrMask;
+            xHash = ulHash & Const.GradAndMask | Const.GradOrMask;
             yHash = xHash << Const.GradShift1;
             zHash = xHash << Const.GradShift2;
             float ulGrad = fx * *(float*)&xHash + (fy - 1) * *(float*)&yHash + fz * *(float*)&zHash; // dot-product
-            xHash = (urHash & Const.GradAndMask) | Const.GradOrMask;
+            xHash = urHash & Const.GradAndMask | Const.GradOrMask;
             yHash = xHash << Const.GradShift1;
             zHash = xHash << Const.GradShift2;
             float urGrad = (fx - 1) * *(float*)&xHash + (fy - 1) * *(float*)&yHash + fz * *(float*)&zHash;

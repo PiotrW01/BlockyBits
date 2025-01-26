@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlockyBitsClient.src;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
@@ -7,6 +8,8 @@ using System.Linq;
 
 public abstract class Object
 {
+    public Transform Transform = new();
+
     public Vector3 pos = new Vector3(0, 0, 0);
     public Vector3 localPos = new Vector3(0, 0, 0);
     public Vector3 rotation = new Vector3(0, 0, 0);
@@ -30,6 +33,7 @@ public abstract class Object
 
     public void UpdateChildrenAndComponents(float deltaTime)
     {
+        // adjusts each childs global pos relative to parent based on their local pos
         foreach (var child in children)
         {
             child.pos = pos + child.localPos;

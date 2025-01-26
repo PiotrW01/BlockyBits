@@ -6,7 +6,7 @@
 
 using System;
 
-namespace SimplexNoise
+namespace BlockyBitsClient.src.Noise
 {
     /// <summary>
     /// Implementation of the Perlin simplex noise, an improved Perlin noise algorithm.
@@ -52,7 +52,7 @@ namespace SimplexNoise
         /// <param name="length">The number of points to generate in the 3nd dimension</param>
         /// <param name="scale">The scale of the noise. The greater the scale, the denser the noise gets</param>
         /// <returns>An array containing 3D Simplex noise</returns>
-        public static float[, ,] Calc3D(int width, int height, int length, float scale)
+        public static float[,,] Calc3D(int width, int height, int length, float scale)
         {
             var values = new float[width, height, length];
             for (var i = 0; i < width; i++)
@@ -362,12 +362,12 @@ namespace SimplexNoise
             129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
             251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
             49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
-            138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180 
+            138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
         };
 
         private static int FastFloor(float x)
         {
-            return (x > 0) ? ((int)x) : (((int)x) - 1);
+            return x > 0 ? (int)x : (int)x - 1;
         }
 
         private static int Mod(int x, int m)
@@ -381,7 +381,7 @@ namespace SimplexNoise
             var h = hash & 15;
             var grad = 1.0f + (h & 7);   // Gradient value 1.0, 2.0, ..., 8.0
             if ((h & 8) != 0) grad = -grad;         // Set a random sign for the gradient
-            return (grad * x);           // Multiply the gradient with the distance
+            return grad * x;           // Multiply the gradient with the distance
         }
 
         private static float Grad(int hash, float x, float y)

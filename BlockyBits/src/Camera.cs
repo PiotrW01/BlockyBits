@@ -38,11 +38,19 @@ public class Camera: Object
         rotation.X += mouseVec.Y * deltaTime * Settings.mouseSensitivity;
         float pitch = Utils.DegToRad(maxPitch);
         rotation.X = Math.Clamp(rotation.X, -pitch, pitch);
+
+
+        Transform.EulerAngles = new Vector3(
+            Math.Clamp(Transform.EulerAngles.X + mouseVec.Y * deltaTime * Settings.mouseSensitivity, -pitch, pitch),
+            Transform.EulerAngles.Y + mouseVec.X * deltaTime * Settings.mouseSensitivity,
+            Transform.EulerAngles.Z
+            );
+        Debug.WriteLine(Transform.GetEulerDegrees());
     }
 
     private void UpdateViewMatrix()
     {
-        Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(rotation.Y, rotation.X, 0);
+        Matrix rotationMatrix = Matrix.CreateFromQuaternion(Transform.Quaternion);
         forward = Vector3.Transform(Vector3.Forward, rotationMatrix);
         viewMatrix = Matrix.CreateLookAt(pos, pos + forward, cameraUp);
     }

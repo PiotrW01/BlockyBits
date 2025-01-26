@@ -21,6 +21,8 @@ namespace BlockyBitsClient.src.Managers
         private static Vector2 lastCameraChunkPos;
         private static WorldGenerator worldGen = new(42);
 
+        static bool updateChunks = true;
+
         public static void Start()
         {
             lastCameraChunkPos = Utils.WorldToChunkCoord(Game1.camera.pos);
@@ -41,6 +43,7 @@ namespace BlockyBitsClient.src.Managers
 
         public static void UpdateChunks()
         {
+            if (!updateChunks) return;
             Vector2 newChunkPos = Utils.WorldToChunkCoord(Game1.camera.pos);
             if (newChunkPos != lastCameraChunkPos)
             {
@@ -134,6 +137,7 @@ namespace BlockyBitsClient.src.Managers
                 chunks.Remove(chunk.pos);
             }
             chunksToRemove.Clear();
+            updateChunks = false;
         }
     }
 }
