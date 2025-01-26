@@ -16,8 +16,8 @@ public class Camera: Object
 
     public Camera(GraphicsDevice gd)
     {
-        pos = new Vector3(0, 10, 0);
-        viewMatrix = Matrix.CreateLookAt(pos, forward, cameraUp);
+        Transform.GlobalPosition = new Vector3(0, 10, 0);
+        viewMatrix = Matrix.CreateLookAt(Transform.GlobalPosition, forward, cameraUp);
         projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
             MathHelper.Pi/3f,
             gd.Viewport.AspectRatio,
@@ -34,11 +34,7 @@ public class Camera: Object
     public override void HandleMouseMove(float deltaTime, Vector2 mouseVec)
     {
         if (!Game1.game.mouseLocked) return;
-        rotation.Y += mouseVec.X * deltaTime * Settings.mouseSensitivity;
-        rotation.X += mouseVec.Y * deltaTime * Settings.mouseSensitivity;
         float pitch = Utils.DegToRad(maxPitch);
-        rotation.X = Math.Clamp(rotation.X, -pitch, pitch);
-
 
         Transform.EulerAngles = new Vector3(
             Math.Clamp(Transform.EulerAngles.X + mouseVec.Y * deltaTime * Settings.mouseSensitivity, -pitch, pitch),
@@ -51,7 +47,7 @@ public class Camera: Object
     {
         Matrix rotationMatrix = Matrix.CreateFromQuaternion(Transform.Quaternion);
         forward = Vector3.Transform(Vector3.Forward, rotationMatrix);
-        viewMatrix = Matrix.CreateLookAt(pos, pos + forward, cameraUp);
+        viewMatrix = Matrix.CreateLookAt(Transform.GlobalPosition, Transform.GlobalPosition + forward, cameraUp);
     }
 
 }

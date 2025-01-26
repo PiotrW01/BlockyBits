@@ -11,6 +11,6 @@ namespace BlockyBitsClient.src
         public static int renderDistance = 10;
         public static bool fog = false;
         public static float mouseSensitivity = 0.1f;
-
+        public static int reach = 5;
     }
 }

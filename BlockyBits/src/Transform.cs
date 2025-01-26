@@ -18,8 +18,8 @@ namespace BlockyBitsClient.src
             }
             set
             {
-                Position += value - GlobalPosition;
-                GlobalPosition = value;
+                //Position += value - GlobalPosition;
+                _globalPosition = value;
             }
         }
         public Quaternion Quaternion
@@ -47,7 +47,7 @@ namespace BlockyBitsClient.src
                 _eulerAngles = vec;
             }
         }
-        public Vector3 Scale = Vector3.Zero;
+        public Vector3 Scale = Vector3.One;
 
 
         public Vector3 GetEulerDegrees()

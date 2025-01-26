@@ -83,7 +83,7 @@ public class Utils
 
     public static Vector2 GetPlayerChunkPos()
     {
-        Vector3 pos = Game1.player.pos;
+        Vector3 pos = Game1.player.Transform.GlobalPosition;
         int x, z;
         x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);
         z = (int)((pos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);

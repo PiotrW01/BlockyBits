@@ -77,29 +77,8 @@
 /processorParam:TextureFormat=Compressed
 /build:font.spritefont
 
-#begin metal-with-leaks_albedo.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:metal-with-leaks_albedo.png
-
-#begin streaky-plywood_albedo.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:streaky-plywood_albedo.png
+#begin shaders/HighlightEffect.mgfx
+/copy:shaders/HighlightEffect.mgfx
 
 #begin textures/default_background.png
 /importer:TextureImporter

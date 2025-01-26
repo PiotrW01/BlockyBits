@@ -45,6 +45,7 @@ public class Game1 : Game
         ObjectManager.Add(camera);
         ChunkManager.Start();
         Debugger.Enable(GraphicsDevice);
+        //_graphics.GraphicsProfile = GraphicsProfile.HiDef;
         _graphics.PreferredBackBufferHeight = 720;
         _graphics.PreferredBackBufferWidth = 1280;
         _graphics.ApplyChanges();
@@ -171,15 +172,15 @@ public class Game1 : Game
     {
         if (!Debugger.showDebugInfo || player == null) return;
         spriteBatch.DrawString(Globals.font, $"Fps: {fps}", new Vector2(20, 20), Color.White);
-        spriteBatch.DrawString(Globals.font, $"Coords: {{X: {player.pos.X.ToString("F2")}, Y: {player.pos.Y.ToString("F2")}, Z: {player.pos.Z.ToString("F2")}}}", new Vector2(20, 40), Color.White);
-        spriteBatch.DrawString(Globals.font, $"Chunk coords: {Utils.GetPlayerChunkPos()} at chunk: {Utils.WorldToChunkPosition(player.pos)}", new Vector2(20, 60), Color.White);
+        spriteBatch.DrawString(Globals.font, $"Coords: {{X: {player.Transform.GlobalPosition.X.ToString("F2")}, Y: {player.Transform.GlobalPosition.Y.ToString("F2")}, Z: {player.Transform.GlobalPosition.Z.ToString("F2")}}}", new Vector2(20, 40), Color.White);
+        spriteBatch.DrawString(Globals.font, $"Chunk coords: {Utils.GetPlayerChunkPos()} at chunk: {Utils.WorldToChunkPosition(player.Transform.GlobalPosition)}", new Vector2(20, 60), Color.White);
         spriteBatch.DrawString(Globals.font, $"Looking at block: {player.lookingAtBlock}", new Vector2(20, 80), Color.White);
     }
 
     public void StartGame()
     {
         player = new Player();
-        player.pos = new Vector3(33, 62, 70);
+        player.Transform.GlobalPosition = new Vector3(33, 62, 70);
         ObjectManager.Add(player);
     }
 }

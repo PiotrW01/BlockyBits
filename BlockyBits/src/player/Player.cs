@@ -29,7 +29,7 @@ public class Player: GameObject
         inventory = new Inventory(12);
         hotbar = new Hotbar(9);
         camera = Game1.camera;
-        camera.localPos = Vector3.Up * 0.7f;
+        camera.Transform.Position = Vector3.Up * 0.7f;
 
         GUIManager.RegisterUIElement(new NoiseRenderer());
 
@@ -47,15 +47,16 @@ public class Player: GameObject
         {
             Matrix m = Matrix.CreateFromQuaternion(camera.Transform.Quaternion);
             Vector3 rotatedOffset = Vector3.Transform(new Vector3(0, 0f, 5.0f), m);
-            camera.localPos = rotatedOffset;
-            Matrix c = Matrix.CreateLookAt(camera.pos, pos, Vector3.Up);
+            camera.Transform.Position = rotatedOffset;
+            Matrix c = Matrix.CreateLookAt(camera.Transform.GlobalPosition, Transform.GlobalPosition, Vector3.Up);
             camera.viewMatrix = c;
         }
 
-        Ray(camera.pos, camera.forward, 5, (blockPos) =>
+        Ray(camera.Transform.GlobalPosition, camera.forward, 5, (blockPos) =>
         {
             lookingAtBlock = blockPos;
             isBlockReal = true;
+            Debugger.QueueDraw(new BoundingBox(lookingAtBlock, lookingAtBlock + Vector3.One));
         });
     }
 
@@ -66,7 +67,7 @@ public class Player: GameObject
             thirdPerson = !thirdPerson;
             if (!thirdPerson)
             {
-                camera.localPos = Vector3.Up * 0.7f;
+                camera.Transform.Position = Vector3.Up * 0.7f;
             }
         }
     }

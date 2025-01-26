@@ -46,23 +46,31 @@ internal class Debugger
     public static void QueueDraw(BoundingBox box)
     {
         Vector3 counterCorner = new Vector3(box.Max.X, box.Min.Y, box.Max.Z);
-        //bottom ring
-        QueueDraw(box.Min, new Vector3(box.Max.X, box.Min.Y, box.Min.Z), Color.Magenta);
-        QueueDraw(box.Min, new Vector3(box.Min.X, box.Min.Y, box.Max.Z), Color.Magenta);
 
 
-        QueueDraw(counterCorner, new Vector3(box.Max.X, box.Min.Y, box.Min.Z), Color.Magenta);
-        QueueDraw(counterCorner, new Vector3(box.Min.X, box.Min.Y, box.Max.Z), Color.Magenta);
+        // sides
 
-        //top ring
-        QueueDraw(box.Max, new Vector3(box.Min.X, box.Max.Y, box.Max.Z), Color.Magenta);
-        QueueDraw(box.Max, new Vector3(box.Max.X, box.Max.Y, box.Min.Z), Color.Magenta);
+        QueueDraw(box.Min, new Vector3(box.Min.X, box.Max.Y, box.Min.Z), Color.Black);
+        QueueDraw(counterCorner, new Vector3(box.Max.X, box.Max.Y, box.Max.Z), Color.Black);
+
+        QueueDraw(new Vector3(box.Max.X, box.Min.Y, box.Min.Z), new Vector3(box.Max.X, box.Max.Y, box.Min.Z), Color.Black);
+        QueueDraw(new Vector3(box.Min.X, box.Min.Y, box.Max.Z), new Vector3(box.Min.X, box.Max.Y, box.Max.Z), Color.Black);
+
+        // bottom ring
+        QueueDraw(box.Min, new Vector3(box.Max.X, box.Min.Y, box.Min.Z), Color.Black);
+        QueueDraw(box.Min, new Vector3(box.Min.X, box.Min.Y, box.Max.Z), Color.Black);
+
+
+        QueueDraw(counterCorner, new Vector3(box.Max.X, box.Min.Y, box.Min.Z), Color.Black);
+        QueueDraw(counterCorner, new Vector3(box.Min.X, box.Min.Y, box.Max.Z), Color.Black);
+
+        // top ring
+        QueueDraw(box.Max, new Vector3(box.Min.X, box.Max.Y, box.Max.Z), Color.Black);
+        QueueDraw(box.Max, new Vector3(box.Max.X, box.Max.Y, box.Min.Z), Color.Black);
 
         counterCorner = new Vector3(box.Min.X, box.Max.Y, box.Min.Z);
-        QueueDraw(counterCorner, new Vector3(box.Min.X, box.Max.Y, box.Max.Z), Color.Magenta);
-        QueueDraw(counterCorner, new Vector3(box.Max.X, box.Max.Y, box.Min.Z), Color.Magenta);
-
-        QueueDraw(box.Min, box.Max, Color.Magenta);
+        QueueDraw(counterCorner, new Vector3(box.Min.X, box.Max.Y, box.Max.Z), Color.Black);
+        QueueDraw(counterCorner, new Vector3(box.Max.X, box.Max.Y, box.Min.Z), Color.Black);
     }
 
     public static void DrawDebugLines()

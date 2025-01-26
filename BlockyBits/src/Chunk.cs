@@ -2,10 +2,12 @@
 using BlockyBitsClient.src;
 using BlockyBitsClient.src.Managers;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 
 public class Chunk
 {
@@ -52,14 +54,6 @@ public class Chunk
         { new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 0, 0), new Vector3(0, 0, 0) },  // Bottom
     };
 
-/*    public Chunk(int posX, int posY)
-    {
-        this.posX = posX;
-        this.posY = posY;
-        GenerateBlocks();
-        GenerateMesh();
-    }*/
-
     public Chunk(int posX, int posY, Dictionary<Vector3, Block> blocks)
     {
         this.posX = posX;
@@ -68,25 +62,6 @@ public class Chunk
         this.blocks = blocks;
         this.boundingBox = new(new Vector3(posX * width, 0, posY * depth),
                                new Vector3(posX * width + width, height, posY * depth + depth));
-        //GenerateMesh();
-    }
-
-
-    private void GenerateBlocks()
-    {
-        blocks.Add(new Vector3(0, 2 ,0), new Block(Block.Type.Dirt));
-        blocks.Add(new Vector3(0, 2 ,1), new Block(Block.Type.Dirt));
-        return;
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < depth; j++)
-            {
-                for (int k = 0; k < 1; k++)
-                {
-                    blocks.Add(new Vector3(i, k, j), new Block(Block.Type.Dirt));
-                }
-            }
-        }
     }
 
     public bool HasBlockAt(Vector3 localPos)
@@ -139,7 +114,7 @@ public class Chunk
     public void GenerateMesh()
     {
         //List<VertexPositionColor> vertices = new();
-        List<VertexPositionTexture> texCoords = new();
+        List<VertexPositionNormalTexture> texCoords = new();
         List<int> indices = new();
 
         //Vector3 cameraDir = Game1.camera.pos - new Vector3(posX * width, 0, posY * depth);
@@ -195,10 +170,10 @@ public class Chunk
                 Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
                 Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
                 Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
-                texCoords.Add(new VertexPositionTexture(pos + faceVertices[face, 0], uv0));
-                texCoords.Add(new VertexPositionTexture(pos + faceVertices[face, 1], uv1));
-                texCoords.Add(new VertexPositionTexture(pos + faceVertices[face, 2], uv2));
-                texCoords.Add(new VertexPositionTexture(pos + faceVertices[face, 3], uv3));
+                texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv0));
+                texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv1));
+                texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv2));
+                texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv3));
 
                 indices.Add(startIndex);
                 indices.Add(startIndex + 1);
@@ -216,7 +191,7 @@ public class Chunk
         {
             vertexBuffer.Dispose();
         }
-        vertexBuffer = new VertexBuffer(Game1.game.GraphicsDevice, typeof(VertexPositionTexture), vertexCount, BufferUsage.WriteOnly);
+        vertexBuffer = new VertexBuffer(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), vertexCount, BufferUsage.WriteOnly);
         vertexBuffer.SetData(texCoords.ToArray());
 
         if(indexBuffer != null)
@@ -232,19 +207,11 @@ public class Chunk
     public void Render()
     {
         if (vertexBuffer == null || indexBuffer == null) return;
-        /*        BasicEffect effect = new BasicEffect(Game1.game.GraphicsDevice)
-                {
-                    VertexColorEnabled = false,
-                    World = Matrix.CreateWorld(new Vector3(posX * width, 0, posY * depth), Vector3.Forward, Vector3.Up),
-                    View = Game1.camera.viewMatrix,
-                    Projection = Game1.camera.projectionMatrix,
-                    TextureEnabled = true,
-                };*/
 
         effect.World = Matrix.CreateWorld(new Vector3(posX * width, 0, posY * depth), Vector3.Forward, Vector3.Up);
         effect.View = Game1.camera.viewMatrix;
-        float distance = Vector2.Distance(pos * width, new Vector2(Game1.camera.pos.X, Game1.camera.pos.Z));
-        if(pos == Utils.WorldToChunkPosition(Game1.camera.pos))
+        float distance = Vector2.Distance(pos * width, new Vector2(Game1.camera.Transform.GlobalPosition.X, Game1.camera.Transform.GlobalPosition.Z));
+        if(pos == Utils.WorldToChunkPosition(Game1.camera.Transform.GlobalPosition))
         {
             Debugger.QueueDraw(boundingBox);
         }
@@ -276,6 +243,23 @@ public class Chunk
             Game1.game.GraphicsDevice.Indices = indexBuffer;
             Game1.game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, indexCount / 3);
         }
+
+/*        if(blocks.ContainsKey(Utils.WorldToLocalChunkCoord(Game1.player.lookingAtBlock)))
+        {
+            //highlightEffect.Parameters["Color"].SetValue(Color.Red.ToVector3());
+            highlightEffect.Parameters["World"].SetValue(effect.World);
+            highlightEffect.Parameters["GridPos"].SetValue(Utils.WorldToLocalChunkCoord(Game1.player.lookingAtBlock));
+            highlightEffect.Parameters["View"].SetValue(Game1.camera.viewMatrix);
+            highlightEffect.Parameters["Projection"].SetValue(Game1.camera.projectionMatrix);
+            // highlight the block the player is looking at
+            foreach (EffectPass pass in highlightEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                Game1.game.GraphicsDevice.SetVertexBuffer(vertexBuffer);
+                Game1.game.GraphicsDevice.Indices = indexBuffer;
+                Game1.game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, indexCount / 3);
+            }
+        }*/
 
     }
 

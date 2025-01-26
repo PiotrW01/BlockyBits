@@ -17,7 +17,7 @@ public class GameObject: Object
     public override void Render()
     {
         if (model == null) return;
-        Matrix worldMatrix = Matrix.CreateScale(scale) * Matrix.CreateFromYawPitchRoll(rotation.X, rotation.Y, rotation.Z) * Matrix.CreateTranslation(pos);
+        Matrix worldMatrix = Matrix.CreateScale(Transform.Scale) * Matrix.CreateFromQuaternion(Transform.Quaternion) * Matrix.CreateTranslation(Transform.GlobalPosition);
         foreach (ModelMesh mesh in model.Meshes)
         {
             foreach (BasicEffect effect in mesh.Effects)

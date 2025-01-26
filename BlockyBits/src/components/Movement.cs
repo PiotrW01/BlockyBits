@@ -85,14 +85,14 @@ internal class Movement: Component
             velocity.Z = Utils.Lerp(velocity.Z, 0, deltaTime * friction);
         } else
         {
-            Matrix yawMatrix = Matrix.CreateFromYawPitchRoll(Game1.camera.rotation.Y, 0, 0);
+            Matrix yawMatrix = Matrix.CreateFromYawPitchRoll(Game1.camera.Transform.EulerAngles.Y, 0, 0);
             Vector3 direction = Vector3.Transform(move, yawMatrix);
             direction *= maxSpeed;
             direction.Y = velocity.Y;
             velocity = Utils.EaseInOut(velocity, direction, deltaTime * acceleration);
         }
         Vector3 deltaVelocity = ApplyCollisions(velocity * deltaTime);
-        owner.pos += deltaVelocity;
+        owner.Transform.GlobalPosition += deltaVelocity;
     }
 
     private bool Collides(Vector3 corner1, Vector3 corner2, Vector3 corner3, Vector3 corner4, Vector3 vComponent)

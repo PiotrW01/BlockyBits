@@ -16,7 +16,7 @@ public class Collider: Component
     {
         get
         {
-            return new BoundingBox((owner.pos - offsetMin * owner.scale), (owner.pos + offsetMax * owner.scale));
+            return new BoundingBox((owner.Transform.GlobalPosition - offsetMin * owner.Transform.Scale), (owner.Transform.GlobalPosition + offsetMax * owner.Transform.Scale));
         }
     }
 

@@ -10,11 +10,6 @@ using System.Linq;
 public abstract class Object
 {
     public Transform Transform = new();
-
-    public Vector3 pos = new Vector3(0, 0, 0);
-    public Vector3 localPos = new Vector3(0, 0, 0);
-    public Vector3 rotation = new Vector3(0, 0, 0);
-    public Vector3 scale = Vector3.One;
     public Object parent = null;
     public List<Object> children = new List<Object>();
     public List<Component> components = new List<Component>();
@@ -37,7 +32,7 @@ public abstract class Object
         // adjusts each childs global pos relative to parent based on their local pos
         foreach (var child in children)
         {
-            child.pos = pos + child.localPos;
+            child.Transform.GlobalPosition = Transform.GlobalPosition + child.Transform.Position;
             child.UpdateChildrenAndComponents(deltaTime);
         }
         foreach (var c in components)
