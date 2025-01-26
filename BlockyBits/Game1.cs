@@ -110,11 +110,11 @@ public class Game1 : Game
 
     private void HandleInput(float delta)
     {
-        BlockyBits.src.Input.UpdateState();
+        Input.UpdateState();
         GUIManager.CheckMouseEvents();
 
 
-        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.F11))
+        if (Input.IsKeyJustPressed(Keys.F11))
         {
             if (_graphics.IsFullScreen)
             {
@@ -129,12 +129,12 @@ public class Game1 : Game
             _graphics.ToggleFullScreen();
             _graphics.ApplyChanges();
         }
-        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.F3))
+        if (Input.IsKeyJustPressed(Keys.F3))
         {
             Debugger.showDebugInfo = !Debugger.showDebugInfo;
         }
 
-        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.F4))
+        if (Input.IsKeyJustPressed(Keys.F4))
         {
             mouseLocked = !mouseLocked;
         }
@@ -142,6 +142,11 @@ public class Game1 : Game
         if (Keyboard.GetState().GetPressedKeyCount() > 0)
         {
             ObjectManager.HandleInput(delta);
+        }
+
+        if (Input.IsMouseClickChanged())
+        {
+            ObjectManager.HandleMouseClick();
         }
 
         if(Input.GetScrollDirection() != 0)
@@ -153,7 +158,7 @@ public class Game1 : Game
         {
             Point p = screenCenter - Mouse.GetState().Position;
             Vector2 mouseVec = p.ToVector2();
-            ObjectManager.HandleMouseInput(delta, mouseVec);
+            ObjectManager.HandleMouseMove(delta, mouseVec);
 
             if (mouseLocked)
             {
@@ -167,7 +172,8 @@ public class Game1 : Game
         if (!Debugger.showDebugInfo || player == null) return;
         spriteBatch.DrawString(Globals.font, $"Fps: {fps}", new Vector2(20, 20), Color.White);
         spriteBatch.DrawString(Globals.font, $"Coords: {{X: {player.pos.X.ToString("F2")}, Y: {player.pos.Y.ToString("F2")}, Z: {player.pos.Z.ToString("F2")}}}", new Vector2(20, 40), Color.White);
-        spriteBatch.DrawString(Globals.font, $"Chunk coords: {Utils.GetPlayerChunkPos()} at chunk: {Utils.WorldToChunkCoord(player.pos)}", new Vector2(20, 60), Color.White);
+        spriteBatch.DrawString(Globals.font, $"Chunk coords: {Utils.GetPlayerChunkPos()} at chunk: {Utils.WorldToChunkPosition(player.pos)}", new Vector2(20, 60), Color.White);
+        spriteBatch.DrawString(Globals.font, $"Looking at block: {player.lookingAtBlock}", new Vector2(20, 80), Color.White);
     }
 
     public void StartGame()

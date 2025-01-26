@@ -31,7 +31,7 @@ public class Camera: Object
         UpdateViewMatrix();
     }
 
-    public override void HandleMouseInput(float deltaTime, Vector2 mouseVec)
+    public override void HandleMouseMove(float deltaTime, Vector2 mouseVec)
     {
         if (!Game1.game.mouseLocked) return;
         rotation.Y += mouseVec.X * deltaTime * Settings.mouseSensitivity;
@@ -45,7 +45,6 @@ public class Camera: Object
             Transform.EulerAngles.Y + mouseVec.X * deltaTime * Settings.mouseSensitivity,
             Transform.EulerAngles.Z
             );
-        Debug.WriteLine(Transform.GetEulerDegrees());
     }
 
     private void UpdateViewMatrix()

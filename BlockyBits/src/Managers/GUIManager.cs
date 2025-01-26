@@ -15,7 +15,6 @@ namespace BlockyBitsClient.src.Managers
     {
         private static HashSet<GUIElement> guiElements = new();
         private static List<GUIElement> elementsToRemove = new();
-        public static MouseState lastState = Mouse.GetState();
 /*        private static event Action OnScroll; // Maybe?
         private static event Action OnInput;
         private static event Action OnHover;
@@ -53,23 +52,17 @@ namespace BlockyBitsClient.src.Managers
                 }
             }
 
-            if (state != lastState)
+            if (Input.IsMouseClickChanged())
             {
-                if (state.LeftButton != lastState.LeftButton ||
-                   state.MiddleButton != lastState.MiddleButton ||
-                   state.RightButton != lastState.RightButton)
+                foreach (GUIElement element in guiElements)
                 {
-                    foreach (GUIElement element in guiElements)
+                    if (!element.isActive) continue;
+                    if (element.rect.Contains(state.Position))
                     {
-                        if (!element.isActive) continue;
-                        if (element.rect.Contains(state.Position))
-                        {
-                            element.OnClickChanged();
-                            break;
-                        }
+                        element.OnClickChanged();
+                        break;
                     }
                 }
-                lastState = state;
             }
 
             foreach (GUIElement element in elementsToRemove)

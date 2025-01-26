@@ -65,13 +65,22 @@ namespace BlockyBitsClient.src.Managers
             }
         }
 
-        public static void HandleMouseInput(float delta, Vector2 mouseVec)
+        public static void HandleMouseMove(float delta, Vector2 mouseVec)
         {
             foreach (Object obj in gameObjects)
             {
-                obj.HandleMouseInput(delta, mouseVec);
-                obj.HandleComponentMouseInput(delta, mouseVec);
-                obj.HandleChildrenMouseInput(delta, mouseVec);
+                obj.HandleMouseMove(delta, mouseVec);
+                obj.HandleComponentMouseMove(delta, mouseVec);
+                obj.HandleChildrenMouseMove(delta, mouseVec);
+            }
+        }
+        public static void HandleMouseClick()
+        {
+            foreach (Object obj in gameObjects)
+            {
+                obj.HandleMouseClick();
+                obj.HandleComponentMouseClick();
+                obj.HandleChildrenMouseClick();
             }
         }
 
@@ -83,5 +92,6 @@ namespace BlockyBitsClient.src.Managers
                 obj.HandleChildrenScrollInput();
             }
         }
+
     }
 }

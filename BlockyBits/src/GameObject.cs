@@ -38,6 +38,6 @@ public class GameObject: Object
 
     public override void LoadContent(ContentManager cm)
     {
-        model = cm.Load<Model>("cube");
+        //model = cm.Load<Model>("cube");
     }
 }

@@ -17,7 +17,9 @@ public abstract class Component
 
     public virtual void HandleInput(float deltaTime) { }
 
-    public virtual void HandleMouseInput(float deltaTime, Vector2 mouseVec) { }
+    public virtual void HandleMouseMove(float deltaTime, Vector2 mouseVec) { }
+
+    public virtual void HandleMouseClick() { }
 
     public void SetOwner(Object owner)
     {

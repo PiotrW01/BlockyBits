@@ -107,13 +107,33 @@ public class Chunk
     public void SetBlock(Vector3 pos, Block block)
     {
         blocks[pos] = block;
-        //GenerateMesh();
+        GenerateMesh();
     }
 
-    public void RemoveBlock(Vector3 pos)
+    public void RemoveBlock(Vector3 localPos)
     {
-        blocks.Remove(pos);
-        //GenerateMesh();
+        if (blocks.ContainsKey(localPos))
+        {
+            blocks.Remove(localPos);
+            GenerateMesh();
+
+            if(localPos.X == width - 1)
+            {
+                ChunkManager.chunks[pos + Vector2.UnitX].GenerateMesh();
+            }
+            else if(localPos.X == 0)
+            {
+                ChunkManager.chunks[pos - Vector2.UnitX].GenerateMesh();
+            }
+            if(localPos.Z == depth - 1)
+            {
+                ChunkManager.chunks[pos + Vector2.UnitY].GenerateMesh();
+            }
+            else if(localPos.Z == 0)
+            {
+                ChunkManager.chunks[pos - Vector2.UnitY].GenerateMesh();
+            }
+        }
     }
 
     public void GenerateMesh()
@@ -224,7 +244,7 @@ public class Chunk
         effect.World = Matrix.CreateWorld(new Vector3(posX * width, 0, posY * depth), Vector3.Forward, Vector3.Up);
         effect.View = Game1.camera.viewMatrix;
         float distance = Vector2.Distance(pos * width, new Vector2(Game1.camera.pos.X, Game1.camera.pos.Z));
-        if(pos == Utils.WorldToChunkCoord(Game1.camera.pos))
+        if(pos == Utils.WorldToChunkPosition(Game1.camera.pos))
         {
             Debugger.QueueDraw(boundingBox);
         }

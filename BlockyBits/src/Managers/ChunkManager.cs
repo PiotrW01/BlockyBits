@@ -25,7 +25,7 @@ namespace BlockyBitsClient.src.Managers
 
         public static void Start()
         {
-            lastCameraChunkPos = Utils.WorldToChunkCoord(Game1.camera.pos);
+            lastCameraChunkPos = Utils.WorldToChunkPosition(Game1.camera.pos);
         }
 
         public static void RenderChunks()
@@ -44,7 +44,7 @@ namespace BlockyBitsClient.src.Managers
         public static void UpdateChunks()
         {
             if (!updateChunks) return;
-            Vector2 newChunkPos = Utils.WorldToChunkCoord(Game1.camera.pos);
+            Vector2 newChunkPos = Utils.WorldToChunkPosition(Game1.camera.pos);
             if (newChunkPos != lastCameraChunkPos)
             {
                 lastCameraChunkPos = newChunkPos;
@@ -98,7 +98,7 @@ namespace BlockyBitsClient.src.Managers
 
         public static void GenerateChunks()
         {
-            lastCameraChunkPos = Utils.WorldToChunkCoord(Game1.camera.pos);
+            lastCameraChunkPos = Utils.WorldToChunkPosition(Game1.camera.pos);
             Debug.WriteLine($"chunk generation starting at: {lastCameraChunkPos}");
             for (int i = (int)lastCameraChunkPos.X - Settings.renderDistance; i <= (int)lastCameraChunkPos.X + Settings.renderDistance; i++)
             {

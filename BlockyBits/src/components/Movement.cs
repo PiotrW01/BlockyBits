@@ -95,10 +95,6 @@ internal class Movement: Component
         owner.pos += deltaVelocity;
     }
 
-    public override void HandleMouseInput(float deltaTime, Vector2 mouseVec)
-    {
-    }
-
     private bool Collides(Vector3 corner1, Vector3 corner2, Vector3 corner3, Vector3 corner4, Vector3 vComponent)
     {
         if (Utils.CollidesWithBlockAt(corner1 + vComponent) ||
@@ -137,7 +133,7 @@ internal class Movement: Component
         //******** Y component ********//
         Vector3 vComponent = velocity * Vector3.Up;
         // bottom collider
-        if (Utils.WorldToGridCoord(corners[2]) != Utils.WorldToGridCoord(corners[2] + vComponent))
+        if (Utils.WorldToLocalChunkCoord(corners[2]) != Utils.WorldToLocalChunkCoord(corners[2] + vComponent))
         {
             if (vComponent.Y < 0f && Collides(corners[2], corners[3], corners[6], corners[7], vComponent))
             {
@@ -150,7 +146,7 @@ internal class Movement: Component
             }
         }
         //top collider
-        if (Utils.WorldToGridCoord(corners[0]) != Utils.WorldToGridCoord(corners[0] + vComponent))
+        if (Utils.WorldToLocalChunkCoord(corners[0]) != Utils.WorldToLocalChunkCoord(corners[0] + vComponent))
         {
             if (vComponent.Y > 0f && Collides(corners[0], corners[1], corners[4], corners[5], vComponent))
             {
@@ -162,7 +158,7 @@ internal class Movement: Component
         //******** X component ********//
         vComponent = velocity * Vector3.Right;
         // right collider
-        if (Utils.WorldToGridCoord(corners[1]) != Utils.WorldToGridCoord(corners[1] + vComponent))
+        if (Utils.WorldToLocalChunkCoord(corners[1]) != Utils.WorldToLocalChunkCoord(corners[1] + vComponent))
         {
             if (vComponent.X > 0f && Collides(corners[1], corners[2], corners[5], corners[6], vComponent))
             {
@@ -171,7 +167,7 @@ internal class Movement: Component
             }
         }
         // left collider
-        if (Utils.WorldToGridCoord(corners[0]) != Utils.WorldToGridCoord(corners[0] + vComponent))
+        if (Utils.WorldToLocalChunkCoord(corners[0]) != Utils.WorldToLocalChunkCoord(corners[0] + vComponent))
         {
             if (vComponent.X < 0f && Collides(corners[0], corners[3], corners[4], corners[7], vComponent))
             {
@@ -183,7 +179,7 @@ internal class Movement: Component
         //******** Z component ********//
         vComponent = velocity * Vector3.Backward;
         // front collider
-        if (Utils.WorldToGridCoord(corners[0]) != Utils.WorldToGridCoord(corners[0] + vComponent))
+        if (Utils.WorldToLocalChunkCoord(corners[0]) != Utils.WorldToLocalChunkCoord(corners[0] + vComponent))
         {
             if (vComponent.Z > 0f && Collides(corners[0], corners[1], corners[2], corners[3], vComponent))
             {
@@ -192,7 +188,7 @@ internal class Movement: Component
             }
         }
         // back collider
-        if (Utils.WorldToGridCoord(corners[4]) != Utils.WorldToGridCoord(corners[4] + vComponent))
+        if (Utils.WorldToLocalChunkCoord(corners[4]) != Utils.WorldToLocalChunkCoord(corners[4] + vComponent))
         {
             if (vComponent.Z < 0f && Collides(corners[4], corners[5], corners[6], corners[7], vComponent))
             {

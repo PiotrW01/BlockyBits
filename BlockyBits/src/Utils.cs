@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 public class Utils
 {
+
     static public float DegToRad(float angle)
     {
         return (((float)Math.PI) / 180) * angle;
@@ -27,12 +28,14 @@ public class Utils
         return result;
     }
 
-    public static Vector2 WorldToChunkCoord(Vector3 pos)
+    // returns the x,y of the chunk
+    public static Vector2 WorldToChunkPosition(Vector3 pos)
     {
         return new Vector2((int)Math.Floor(pos.X / Chunk.width), (int)Math.Floor(pos.Z / Chunk.depth));
     }
 
-    public static Vector3 WorldToGridCoord(Vector3 pos)
+    // returns the x,y,z relative to the chunk start point
+    public static Vector3 WorldToLocalChunkCoord(Vector3 pos)
     {
         int x, z;
         x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);
@@ -40,22 +43,22 @@ public class Utils
         return new Vector3(x, (int)pos.Y, z);
     }
 
-    public static BoundingBox? GetBoundingBoxAt(Vector3 pos)
+    public static BoundingBox? GetBoundingBoxAt(Vector3 globalPos)
     {
         int x, z;
-        Vector2 chunkPos = WorldToChunkCoord(pos);
+        Vector2 chunkPos = WorldToChunkPosition(globalPos);
 
         // Compute local block coordinates (ensuring positive values)
-        x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);
-        z = (int)((pos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
+        x = (int)((globalPos.X % Chunk.width + Chunk.width) % Chunk.width);
+        z = (int)((globalPos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
 
         ChunkManager.chunks.TryGetValue(chunkPos, out Chunk chunk);
         if (chunk != null)
         {
-            if(chunk.HasBlockAt(new Vector3(x, (int)pos.Y, z)))
+            if(chunk.HasBlockAt(new Vector3(x, (int)globalPos.Y, z)))
             {
-                return new BoundingBox(new Vector3(chunkPos.X * Chunk.width + x,(int)pos.Y, chunkPos.Y * Chunk.depth + z), 
-                                       new Vector3(chunkPos.X * Chunk.width + x + 1, (int)pos.Y + 1, chunkPos.Y * Chunk.depth + z + 1));
+                return new BoundingBox(new Vector3(chunkPos.X * Chunk.width + x,(int)globalPos.Y, chunkPos.Y * Chunk.depth + z), 
+                                       new Vector3(chunkPos.X * Chunk.width + x + 1, (int)globalPos.Y + 1, chunkPos.Y * Chunk.depth + z + 1));
             }
         }
         return null;
@@ -64,7 +67,7 @@ public class Utils
     public static bool CollidesWithBlockAt(Vector3 pos)
     {
         int x, z;
-        Vector2 chunkPos = WorldToChunkCoord(pos);
+        Vector2 chunkPos = WorldToChunkPosition(pos);
 
         // Compute local block coordinates (ensuring positive values)
         x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);

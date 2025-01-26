@@ -1,4 +1,5 @@
 ﻿using BlockyBitsClient.src;
+using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -77,27 +78,29 @@ public abstract class Object
         }
     }
 
-    public void HandleComponentMouseInput(float deltaTime, Vector2 mouseVec)
+    public void HandleComponentMouseMove(float deltaTime, Vector2 mouseVec)
     {
         foreach (var component in components)
         {
-            component.HandleMouseInput(deltaTime, mouseVec);
+            component.HandleMouseMove(deltaTime, mouseVec);
         }
     }
 
-    public void HandleChildrenMouseInput(float deltaTime, Vector2 mouseVec)
+    public void HandleChildrenMouseMove(float deltaTime, Vector2 mouseVec)
     {
         foreach( var child in children)
         {
-            child.HandleMouseInput(deltaTime, mouseVec);
-            child.HandleChildrenMouseInput(deltaTime, mouseVec);
+            child.HandleMouseMove(deltaTime, mouseVec);
+            child.HandleChildrenMouseMove(deltaTime, mouseVec);
         }
     }
 
     public virtual void HandleInput(float deltaTime) { }
 
     // mouseVec is the relative position of the mouse to the screen center
-    public virtual void HandleMouseInput(float deltaTime, Vector2 mouseVec) { }
+    public virtual void HandleMouseMove(float deltaTime, Vector2 mouseVec) { }
+
+    public virtual void HandleMouseClick() { }
 
     public virtual void HandleScrollInput() { }
 
@@ -121,6 +124,23 @@ public abstract class Object
         {
             child.HandleInput(delta);
             child.HandleChildrenInput(delta);
+        }
+    }
+
+    public void HandleChildrenMouseClick()
+    {
+        foreach(var child in children)
+        {
+            child.HandleMouseClick();
+            child.HandleChildrenMouseClick();
+        }
+    }
+
+    public void HandleComponentMouseClick()
+    {
+        foreach (var component in components)
+        {
+            component.HandleMouseClick();
         }
     }
 
