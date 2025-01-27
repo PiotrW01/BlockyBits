@@ -76,6 +76,13 @@ public class Utils
         ChunkManager.chunks.TryGetValue(chunkPos, out Chunk chunk);
         if(chunk != null)
         {
+            Block block = chunk.GetBlockAtLocalPos(new Vector3(x, (int)pos.Y, z));
+            if (block == null || !block.hasCollisions)
+            {
+                return false;
+            }
+            return true;
+
             return chunk.HasBlockAt(new Vector3(x, (int)pos.Y, z));
         }
         return false;

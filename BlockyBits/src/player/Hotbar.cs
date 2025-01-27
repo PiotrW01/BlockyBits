@@ -33,11 +33,11 @@ namespace BlockyBitsClient.src.player
         {
             int direction = Input.GetScrollDirection();
 
-            if (direction == 1)
+            if (direction == -1)
             {
                 selectedSlot++;
             }
-            else if (direction == -1)
+            else if (direction == 1)
             {
                 selectedSlot--;
             }

@@ -26,18 +26,43 @@ namespace BlockyBitsClient.src.Managers
         public static void Start()
         {
             lastCameraChunkPos = Utils.WorldToChunkPosition(Game1.camera.Transform.GlobalPosition);
+            //Shaders.WaterShader.Parameters["LightDirection"].SetValue(Vector3.Normalize(new Vector3(-0.5f, -1.0f, 0)));
+            //Shaders.WaterShader.Parameters["LightColor"].SetValue(new Vector4(0.8f, 0.8f, 0.8f, 1.0f));
+            //Shaders.WaterShader.Parameters["AmbientColor"].SetValue(new Vector4(0.2f, 0.2f, 0.2f, 1.0f));
         }
 
         public static void RenderChunks()
         {
             BoundingFrustum frustum = new(Game1.camera.viewMatrix * Game1.camera.projectionMatrix);
+            Game1.game.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            Game1.game.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+            Game1.game.GraphicsDevice.BlendState = BlendState.Opaque;
             foreach (Chunk chunk in chunks.Values)
             {
                 if (!frustum.Intersects(chunk.boundingBox)){
                     continue;
                 }
-                Game1.game.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
                 chunk.Render();
+            }
+
+        }
+
+        public static void RenderWater()
+        {
+            BoundingFrustum frustum = new(Game1.camera.viewMatrix * Game1.camera.projectionMatrix);
+            Game1.game.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+            Game1.game.GraphicsDevice.DepthStencilState = new DepthStencilState()
+            {
+                DepthBufferEnable = true,   // Depth testing ON
+                DepthBufferWriteEnable = false // Depth writing OFF
+            };
+            foreach (Chunk chunk in chunks.Values)
+            {
+                if (!frustum.Intersects(chunk.boundingBox))
+                {
+                    continue;
+                }
+                chunk.RenderWater();
             }
         }
 

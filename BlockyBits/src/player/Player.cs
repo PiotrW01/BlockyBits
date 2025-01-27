@@ -157,16 +157,9 @@ public class Player: GameObject
         ChunkManager.chunks[Utils.WorldToChunkPosition(globalCoord)].SetBlock(Utils.WorldToLocalChunkCoord(globalCoord), new Block(Block.Type.Stone));
     }
 
-
     private int abc(float x)
     {
-        if(x < 0)
-        {
-            return (int)Math.Ceiling(x);
-        } else
-        {
-            return (int)Math.Floor(x);
-        }
+        return (int)Math.Floor(x);
     }
 
     private void RayCast(Vector3 startPos, Vector3 direction, int reach)

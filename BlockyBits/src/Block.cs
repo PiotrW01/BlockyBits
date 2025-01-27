@@ -1,17 +1,33 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 
-public class Block(Block.Type type)
+public class Block
 {
     public enum Type {
         Air,
         Dirt,
-        Stone
+        Stone,
+        Water
     }
-    public Type type = type;
     public static int blockResolution = 16;
+    public Type type;
+    public bool isTransparent = false;
+    public bool hasCollisions = true;
 
     public static Dictionary<Block.Type, Vector2[]> blockUVs;
+
+    public Block(Block.Type type)
+    {
+        this.type = type;
+        if(type == Type.Water)
+        {
+            hasCollisions = false;
+            isTransparent = true;
+        }
+    }
+
+
+
 
     public static void InitializeBlocks()
     {
@@ -19,6 +35,7 @@ public class Block(Block.Type type)
         {
             {Block.Type.Dirt, Utils.RepeatValues6(new Vector2(0,0))},
             {Block.Type.Stone, Utils.RepeatValues6(new Vector2(1,0))},
+            {Block.Type.Water, Utils.RepeatValues6(new Vector2(2,0))},
         };
         CalculateUVs();
     }

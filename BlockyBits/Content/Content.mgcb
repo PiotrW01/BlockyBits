@@ -77,6 +77,9 @@
 /processorParam:TextureFormat=Compressed
 /build:font.spritefont
 
+#begin shaders/Combine.mgfx
+/copy:shaders/Combine.mgfx
+
 #begin shaders/HighlightEffect.mgfx
 /copy:shaders/HighlightEffect.mgfx
 

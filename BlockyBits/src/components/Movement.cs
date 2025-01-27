@@ -16,6 +16,8 @@ internal class Movement: Component
     bool isFlying = true;
     Collider collider;
     bool isGrounded = true;
+    bool canCollide = true;
+
     public override void Start()
     {
         collider = owner.GetComponent<Collider>();
@@ -34,6 +36,10 @@ internal class Movement: Component
         if (BlockyBits.src.Input.IsKeyJustPressed(Keys.L)) 
         { 
             isFlying = !isFlying;
+        }
+        if (BlockyBits.src.Input.IsKeyJustPressed(Keys.H))
+        {
+            canCollide = !canCollide;
         }
     }
 
@@ -91,7 +97,15 @@ internal class Movement: Component
             direction.Y = velocity.Y;
             velocity = Utils.EaseInOut(velocity, direction, deltaTime * acceleration);
         }
-        Vector3 deltaVelocity = ApplyCollisions(velocity * deltaTime);
+        Vector3 deltaVelocity;
+        if (canCollide)
+        {
+            deltaVelocity = ApplyCollisions(velocity, deltaTime);
+        }
+        else
+        {
+            deltaVelocity = velocity * deltaTime;
+        }
         owner.Transform.GlobalPosition += deltaVelocity;
     }
 
@@ -107,8 +121,9 @@ internal class Movement: Component
         return false;
     }
 
-    private Vector3 ApplyCollisions(Vector3 velocity)
+    private Vector3 ApplyCollisions(Vector3 velocity, float deltaTime)
     {
+        velocity *= deltaTime;
         // TODO: fix collision not detecting when running into edge of block
         // BoundingBox
         // 0,1,4,5 Y+

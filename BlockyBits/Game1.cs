@@ -17,7 +17,7 @@ public class Game1 : Game
     public SpriteBatch spriteBatch;
     public Point screenCenter;
     public static Camera camera;
-    
+    public static RenderTarget2D renderTarget;
     
     public double elapsedTime = 0f;
     public static Game1 game;
@@ -49,7 +49,8 @@ public class Game1 : Game
         _graphics.PreferredBackBufferHeight = 720;
         _graphics.PreferredBackBufferWidth = 1280;
         _graphics.ApplyChanges();
-
+        renderTarget = new(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24);
+        Shaders.WaterShader.Parameters["tex"].SetValue(renderTarget);
         //client = new TcpClient("localhost", Network.serverPort);
         screenCenter = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
         Mouse.SetPosition(screenCenter.X, screenCenter.Y);
@@ -91,19 +92,26 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
-
+        Shaders.UpdateShaderParameters();
+        
+        GraphicsDevice.SetRenderTarget(renderTarget);
         GraphicsDevice.Clear(Color.CornflowerBlue);
-        GraphicsDevice.SamplerStates[0] = new SamplerState()
+        GraphicsDevice.SamplerStates[1] = new SamplerState()
         {
             Filter = TextureFilter.Point
         };
         ChunkManager.RenderChunks();
-
+        
+        ChunkManager.RenderWater();
         ObjectManager.RenderObjects();
-        Debugger.DrawDebugLines();
+        GraphicsDevice.SetRenderTarget(null);
+
         spriteBatch.Begin();
+        spriteBatch.Draw(renderTarget, Vector2.Zero, Color.White);
         RenderDebugInfo();
         spriteBatch.End();
+
+        Debugger.DrawDebugLines();
         GUIManager.RenderGUI(spriteBatch);
 
         base.Draw(gameTime);
@@ -117,11 +125,13 @@ public class Game1 : Game
 
         if (Input.IsKeyJustPressed(Keys.F11))
         {
+            renderTarget.Dispose();
             if (_graphics.IsFullScreen)
             {
                 _graphics.PreferredBackBufferHeight = 720;
                 _graphics.PreferredBackBufferWidth = 1280;
-            } else
+            }
+            else
             {
                 _graphics.HardwareModeSwitch = false;
                 _graphics.PreferredBackBufferHeight = 1080;
@@ -129,6 +139,7 @@ public class Game1 : Game
             }
             _graphics.ToggleFullScreen();
             _graphics.ApplyChanges();
+            renderTarget = new(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24);
         }
         if (Input.IsKeyJustPressed(Keys.F3))
         {
@@ -180,7 +191,7 @@ public class Game1 : Game
     public void StartGame()
     {
         player = new Player();
-        player.Transform.GlobalPosition = new Vector3(33, 62, 70);
+        player.Transform.GlobalPosition = new Vector3(-120, 35, 82);
         ObjectManager.Add(player);
     }
 }
