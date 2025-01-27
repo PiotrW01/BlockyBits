@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BlockyBits\BlockyBitsClient.csproj" />
+    <ProjectReference Include="..\BlockyBits\BlockyBitsOpenGL.csproj" />
   </ItemGroup>
 
   <ItemGroup>
