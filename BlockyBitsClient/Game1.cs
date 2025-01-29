@@ -105,14 +105,13 @@ public class Game1 : Game
     protected override void Draw(GameTime gameTime)
     {
         Shaders.UpdateShaderParameters();
-
         GraphicsDevice.SetRenderTarget(renderTarget);
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
         GraphicsDevice.BlendState = BlendState.Opaque;
-        GraphicsDevice.SamplerStates[1] = new SamplerState()
+        GraphicsDevice.SamplerStates[0] = new SamplerState()
         {
             Filter = TextureFilter.Point,
             AddressU = TextureAddressMode.Clamp,
@@ -125,7 +124,12 @@ public class Game1 : Game
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         GraphicsDevice.BlendState = BlendState.Opaque;
         GraphicsDevice.Clear(ClearOptions.Target, Color.CornflowerBlue, 0.0f, 0);
-
+        GraphicsDevice.SamplerStates[0] = new SamplerState()
+        {
+            Filter = TextureFilter.Point,
+            AddressU = TextureAddressMode.Mirror,
+            AddressV = TextureAddressMode.Mirror,
+        };
         ChunkManager.RenderChunks();
         ChunkManager.RenderWater();
         ObjectManager.RenderObjects();

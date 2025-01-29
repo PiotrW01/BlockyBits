@@ -13,13 +13,14 @@ float4x4 View;
 float4x4 Projection;
 float3 GridPos;
 //Texture2D tex;
+sampler2D noise;
 sampler2D tex : register(s0);
-SamplerState Sampler : register(s1);
+float Time;
 
-cbuffer Time : register(b1)
-{
-    float Time;
-}
+//cbuffer Time : register(b1)
+//{
+//    float Time;
+//}
 
 cbuffer LightBuffer : register(b2)
 {
@@ -54,18 +55,16 @@ float Noise(float2 coord)
 VertexShaderOutput MainVS(in VertexShaderInput input)
 {
     VertexShaderOutput output = (VertexShaderOutput)0;
-    float offset = sin((GridPos.x + input.Position.x, GridPos.z + input.Position.z) * Time / 2.0);
-    input.Position.y -= abs(offset) * 0.00001;
+    float offset = sin(((GridPos.x + input.Position.x + GridPos.z + input.Position.z) + Time / 3.0));
+    
+    input.Position.y -= abs(offset) * 0.2;
     
     float4 worldPosition = mul(float4(input.Position.xyz, 1.0), World);
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
     output.Normal = normalize(input.Normals);
     output.ScreenPos = output.Position;
-    
-    
-    
-    
+
     return output;
 }
 
@@ -83,16 +82,14 @@ float4 MainPS(VertexShaderOutput input) : COLOR0
     float2 pixelCoords = input.ScreenPos.yx / input.ScreenPos.w; // Perspective divide
     pixelCoords = pixelCoords * 0.5 + 0.5;
     pixelCoords = RotateUV(pixelCoords, radians(-90));
+    float4 water = float4(0.0, 0.0, 0.8, 0.6);
     //float4 noiseColor = tex2D(noise, pixelCoords + 0.05 * Time);
     //pixelCoords += 0.2 * noiseColor.rr;
-    pixelCoords = clamp(pixelCoords, 0.0, 1.0);
     //float4 behind = tex.Sample(Sampler, pixelCoords);
     // Final color is a combination of ambient and diffuse lighting
-    float4 water = float4(0.0, 0.0, 0.8, 0.6);
-    float4 behind = tex2D(tex, pixelCoords);
-    behind.g = 0.0;
-    return behind;
-    //return lerp(tex2D(tex, pixelCoords), water, 0.6);
+    //pixelCoords = clamp(pixelCoords, 0.0, 1.0);
+
+    return lerp(tex2D(tex, pixelCoords), water, 0.6);
 }
 
 // Technique and passes within the technique

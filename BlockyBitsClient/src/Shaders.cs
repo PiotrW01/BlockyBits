@@ -20,7 +20,7 @@ namespace BlockyBitsClient.src
 
         public static void UpdateShaderParameters()
         {
-            //WaterShader.Parameters["Time"].SetValue((float)Game1.game.elapsedTime);
+            WaterShader.Parameters["Time"].SetValue((float)Game1.game.elapsedTime);
         }
     }
 }
