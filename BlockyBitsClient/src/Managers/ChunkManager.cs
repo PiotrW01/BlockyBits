@@ -34,9 +34,6 @@ namespace BlockyBitsClient.src.Managers
         public static void RenderChunks()
         {
             BoundingFrustum frustum = new(Game1.camera.viewMatrix * Game1.camera.projectionMatrix);
-            Game1.game.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            Game1.game.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-            Game1.game.GraphicsDevice.BlendState = BlendState.Opaque;
             foreach (Chunk chunk in chunks.Values)
             {
                 if (!frustum.Intersects(chunk.boundingBox)){
@@ -50,12 +47,7 @@ namespace BlockyBitsClient.src.Managers
         public static void RenderWater()
         {
             BoundingFrustum frustum = new(Game1.camera.viewMatrix * Game1.camera.projectionMatrix);
-            Game1.game.GraphicsDevice.BlendState = BlendState.AlphaBlend;
-            Game1.game.GraphicsDevice.DepthStencilState = new DepthStencilState()
-            {
-                DepthBufferEnable = true,   // Depth testing ON
-                DepthBufferWriteEnable = false // Depth writing OFF
-            };
+
             foreach (Chunk chunk in chunks.Values)
             {
                 if (!frustum.Intersects(chunk.boundingBox))

@@ -6,9 +6,11 @@ using BlockyBitsCommon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SharpGLTF.Schema2;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Sockets;
 
 public class Game1 : Game
@@ -27,6 +29,7 @@ public class Game1 : Game
     int fps = 0;
     double timeSinceLastUpdate = 0;
     public bool mouseLocked = true;
+    ModelRoot root;
 
     public Game1()
     {
@@ -54,6 +57,7 @@ public class Game1 : Game
         //client = new TcpClient("localhost", Network.serverPort);
         screenCenter = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
         Mouse.SetPosition(screenCenter.X, screenCenter.Y);
+        root = ModelRoot.Load("files/erm.gltf");
         base.Initialize();
     }
 
@@ -101,8 +105,72 @@ public class Game1 : Game
             Filter = TextureFilter.Point
         };
         ChunkManager.RenderChunks();
+
+        GraphicsDevice.RasterizerState = RasterizerState.CullClockwise;
+
+
+
+        List<VertexPositionNormalTexture> verticesList = new List<VertexPositionNormalTexture>();
+        List<uint> indicesList = new List<uint>();
+        uint indexCount = 0;
+
+        foreach (var node in root.LogicalNodes)
+        {
+            if(node.Mesh != null)
+            {
+                
+                var primitive = node.Mesh.Primitives[0];
+                var posAccessor = primitive.GetVertexAccessor("POSITION");
+                var normalAccessor = primitive.GetVertexAccessor("NORMAL");
+                var vertices = posAccessor.AsVector3Array();
+                var normals = normalAccessor.AsVector3Array();
+                var indices = primitive.GetIndexAccessor().AsIndicesArray().ToArray();
+
+                uint vertexOffset = (uint)verticesList.Count;
+                for (int i = 0; i < indices.Length; i++)
+                {
+                    indicesList.Add(indices[i] + vertexOffset);
+                }
+                for (int i = 0; i < vertices.Count; i++)
+                {
+                    var vertex = Vector3.Transform(vertices[i], node.WorldMatrix);
+                    var normal = Vector3.TransformNormal(normals[i], node.WorldMatrix);
+
+                    verticesList.Add(new VertexPositionNormalTexture(vertex, normal, Vector2.Zero));
+                }
+
+            }
+        }
+        using VertexBuffer vertexBuffer = new VertexBuffer(GraphicsDevice, typeof(VertexPositionNormalTexture), verticesList.Count, BufferUsage.WriteOnly);
+        vertexBuffer.SetData(verticesList.ToArray());
+
+        using IndexBuffer indexBuffer = new IndexBuffer(GraphicsDevice, IndexElementSize.ThirtyTwoBits, indicesList.Count, BufferUsage.WriteOnly);
+        indexBuffer.SetData(indicesList.ToArray());
+
         
-        ChunkManager.RenderWater();
+        BasicEffect effect = new BasicEffect(GraphicsDevice)
+        {
+            World = Matrix.CreateWorld(new Vector3(-120, 35, 82), Vector3.Forward, Vector3.Up),
+            View = camera.viewMatrix,
+            Projection = camera.projectionMatrix,
+            LightingEnabled = true,
+        };
+        effect.DirectionalLight0.Enabled = true;
+        effect.DirectionalLight0.Direction = new Vector3(1.0f, 1.0f, 1.0f);
+        effect.DirectionalLight0.DiffuseColor = Color.Gray.ToVector3();
+        effect.AmbientLightColor = new Color(0.1f, 0.1f, 0.1f).ToVector3();
+
+        foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+        {
+            pass.Apply();
+            GraphicsDevice.SetVertexBuffer(vertexBuffer);
+            GraphicsDevice.Indices = indexBuffer;
+            GraphicsDevice.DrawIndexedPrimitives(Microsoft.Xna.Framework.Graphics.PrimitiveType.TriangleList, 0, 0, indicesList.Count / 3);
+        }
+
+
+
+        //ChunkManager.RenderWater();
         ObjectManager.RenderObjects();
         GraphicsDevice.SetRenderTarget(null);
 

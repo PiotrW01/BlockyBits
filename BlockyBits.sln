@@ -13,6 +13,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockyBitsClient", "BlockyBitsClient\BlockyBitsClient.csproj", "{6EB8E706-1E40-4C67-97F7-43E5C6EF5AC9}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{525B4E44-4DD4-4E02-A4FB-BE8C9E6E3C0D}"
+	ProjectSection(SolutionItems) = preProject
+		Log.md = Log.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

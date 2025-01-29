@@ -3,8 +3,8 @@
 #define VS_SHADERMODEL vs_3_0
 #define PS_SHADERMODEL ps_3_0
 #else
-#define VS_SHADERMODEL vs_4_0
-#define PS_SHADERMODEL ps_4_0
+#define VS_SHADERMODEL vs_5_0
+#define PS_SHADERMODEL ps_5_0
 #endif
 
 // Properties you can use from C# code
@@ -12,7 +12,8 @@ float4x4 World;
 float4x4 View;
 float4x4 Projection;
 float3 GridPos;
-sampler2D tex;
+//Texture2D tex;
+sampler2D tex : register(s0);
 SamplerState Sampler : register(s1);
 
 cbuffer Time : register(b1)
@@ -43,12 +44,18 @@ struct VertexShaderOutput
     float4 ScreenPos : TEXCOORD0;
 };
 
+float Noise(float2 coord)
+{
+    float n = sin(dot(coord, float2(12.9898, 78.233))) * 43758.5453;
+    return frac(n); // Use the fractional part to get a value between 0 and 1
+}
+
 // Actual shaders
 VertexShaderOutput MainVS(in VertexShaderInput input)
 {
     VertexShaderOutput output = (VertexShaderOutput)0;
-    float offset = sin(Time + GridPos.x + GridPos.z + input.Position.x + input.Position.z) / 2;
-    input.Position.y -= abs(offset);
+    float offset = sin((GridPos.x + input.Position.x, GridPos.z + input.Position.z) * Time / 2.0);
+    input.Position.y -= abs(offset) * 0.00001;
     
     float4 worldPosition = mul(float4(input.Position.xyz, 1.0), World);
     float4 viewPosition = mul(worldPosition, View);
@@ -75,21 +82,17 @@ float4 MainPS(VertexShaderOutput input) : COLOR0
 {   
     float2 pixelCoords = input.ScreenPos.yx / input.ScreenPos.w; // Perspective divide
     pixelCoords = pixelCoords * 0.5 + 0.5;
+    pixelCoords = RotateUV(pixelCoords, radians(-90));
+    //float4 noiseColor = tex2D(noise, pixelCoords + 0.05 * Time);
+    //pixelCoords += 0.2 * noiseColor.rr;
     pixelCoords = clamp(pixelCoords, 0.0, 1.0);
-    //pixelCoords.xy = pixelCoords.yx;
-    // Normalize the normal
-    float3 normal = normalize(input.Normal);
-    // Calculate the diffuse lighting component (Lambertian reflection)
-    float diffuse = max(dot(normal, -LightDirection), 0.0f); // Dot product with light direction (lightDirection is already normalized)
-
-    // Calculate the final color by combining ambient light, diffuse light, and the light's color
-    float4 diffuseColor = LightColor * diffuse;
-    float4 ambientColor = AmbientColor * float4(0.0,0.0,1.0,0.7);
+    //float4 behind = tex.Sample(Sampler, pixelCoords);
     // Final color is a combination of ambient and diffuse lighting
     float4 water = float4(0.0, 0.0, 0.8, 0.6);
-    float4 behind = tex2D(tex, RotateUV(pixelCoords, radians(-90)));
-    behind.gb = float2(0.0, 0.0);
-    return lerp(behind, water, 0.2);
+    float4 behind = tex2D(tex, pixelCoords);
+    behind.g = 0.0;
+    return behind;
+    //return lerp(tex2D(tex, pixelCoords), water, 0.6);
 }
 
 // Technique and passes within the technique

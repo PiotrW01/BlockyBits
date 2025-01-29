@@ -16,7 +16,7 @@ namespace BlockyBitsClient.src.gui
 
         public override void Ready()
         {
-            backgroundTexture = TextureAtlas.GetTextureAt(0, 0);
+            backgroundTexture = TextureAtlas.GetTextureOf("dirt");
             Debug.WriteLine("menu loaded");
             bt = new Button("Start the game!");
             bt.SetPosition(100, 100);

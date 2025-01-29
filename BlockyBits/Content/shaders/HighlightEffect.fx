@@ -76,6 +76,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR0
     float2 pixelCoords = input.ScreenPos.yx / input.ScreenPos.w; // Perspective divide
     pixelCoords = pixelCoords * 0.5 + 0.5;
     pixelCoords = clamp(pixelCoords, 0.0, 1.0);
+    pixelCoords += sin(Time * 2);
     //pixelCoords.xy = pixelCoords.yx;
     // Normalize the normal
     float3 normal = normalize(input.Normal);
@@ -87,8 +88,7 @@ float4 MainPS(VertexShaderOutput input) : COLOR0
     float4 ambientColor = AmbientColor * float4(0.0,0.0,1.0,0.7);
     // Final color is a combination of ambient and diffuse lighting
     float4 water = float4(0.0, 0.0, 0.8, 0.6);
-    float4 behind = tex2D(tex, RotateUV(pixelCoords, radians(-90)));
-    behind.gb = float2(0.0, 0.0);
+    float4 behind = tex2D(tex, pixelCoords);
     return lerp(behind, water, 0.2);
 }
 

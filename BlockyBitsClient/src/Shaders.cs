@@ -13,7 +13,6 @@ namespace BlockyBitsClient.src
         private static List<Effect> shaderList;
 
         public static Effect WaterShader = new(Game1.game.GraphicsDevice, File.ReadAllBytes("Content/shaders/HighlightEffect.mgfx"));
-        public static Effect combineShader = new(Game1.game.GraphicsDevice, File.ReadAllBytes("Content/shaders/Combine.mgfx"));
 
 
 
@@ -21,7 +20,7 @@ namespace BlockyBitsClient.src
 
         public static void UpdateShaderParameters()
         {
-            WaterShader.Parameters["Time"].SetValue((float)Game1.game.elapsedTime);
+            //WaterShader.Parameters["Time"].SetValue((float)Game1.game.elapsedTime);
         }
     }
 }

@@ -54,6 +54,7 @@ public class Chunk
         { new Vector3(0, 0, 1), new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 1) }, // Left
         { new Vector3(1, 0, 0), new Vector3(1, 0, 1), new Vector3(1, 1, 1), new Vector3(1, 1, 0) }, // Right
         { new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 1, 1), new Vector3(0, 1, 1) }, // Top
+        //{ new Vector3(1, 1, 0), new Vector3(1, 1, 1), new Vector3(0, 1, 1), new Vector3(0, 1, 0) }, // Top
         { new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 0, 0), new Vector3(0, 0, 0) },  // Bottom
     };
 
@@ -123,13 +124,13 @@ public class Chunk
         List<int> indices = new();
         List<int> indicesWater = new();
 
-        //Vector3 cameraDir = Game1.camera.pos - new Vector3(posX * width, 0, posY * depth);
-        //cameraDir.Normalize();
         int highestPoint = 0;
         foreach(var pos in blocks.Keys)
         {
             Block block = blocks[pos];
-            Vector2[] blockUVs = Block.GetUVs(block.type);
+            BlockInformation blockInfo = Block.GetBlockInformation(block.type);
+            //Vector2[] blockUVs = Block.GetUVs(block.type);
+            Vector2[] blockUVs = blockInfo.UVs;
 
             if (pos.Y > highestPoint) highestPoint = (int)pos.Y;
 
@@ -202,6 +203,7 @@ public class Chunk
                     Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
                     Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
                     Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                    
                     texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv0));
                     texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv1));
                     texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv2));
@@ -220,10 +222,10 @@ public class Chunk
                     Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
                     Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
                     Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv0));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv1));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv2));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv3));
+                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv3));
+                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv2));
+                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv1));
+                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv0));
 
                     indices.Add(startIndex);
                     indices.Add(startIndex + 1);
@@ -250,6 +252,11 @@ public class Chunk
         indexBuffer.SetData(indices.Concat(indicesWater).ToArray());
 
         boundingBox.Max.Y = highestPoint + 2;
+    }
+
+    private Vector2 rotate(Vector2 point)
+    {
+        return new Vector2(point.Y, 1.0f - point.X);
     }
 
     public void Render()

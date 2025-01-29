@@ -28,6 +28,22 @@ public class Utils
         return result;
     }
 
+    public static Vector2[] GenerateUVs(String front, String back, String left, String right, String top, String bottom)
+    {
+        Vector2 f = Block.GetUVCoordsof(front);
+        Vector2 bck = Block.GetUVCoordsof(back);
+        Vector2 l = Block.GetUVCoordsof(left);
+        Vector2 r = Block.GetUVCoordsof(right);
+        Vector2 t = Block.GetUVCoordsof(top);
+        Vector2 bt = Block.GetUVCoordsof(bottom);
+
+        return [f,bck,l,r,t,bt];
+    }
+
+
+
+
+
     // returns the x,y of the chunk
     public static Vector2 WorldToChunkPosition(Vector3 pos)
     {

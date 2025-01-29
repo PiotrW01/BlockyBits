@@ -10,8 +10,8 @@ namespace BlockyBitsClient.src.player
     {
         private Hotbar hotbar;
         int slotSize = 64;
-        Sprite slotSprite;
-        Sprite selectedSprite;
+        Rectangle slot;
+        Rectangle selectedSlot;
 
         public HotbarInterface(Hotbar hotbar)
         {
@@ -20,8 +20,8 @@ namespace BlockyBitsClient.src.player
 
         public override void Ready()
         {
-            slotSprite = TextureAtlas.GetSpriteAt(1, 0);
-            selectedSprite = TextureAtlas.GetSpriteAt(0, 0);
+            slot = TextureAtlas.GetTextureOf("dirt");
+            selectedSlot = TextureAtlas.GetTextureOf("stone");
         }
 
         public override void Render(SpriteBatch sb)
@@ -35,15 +35,15 @@ namespace BlockyBitsClient.src.player
                 Rectangle rect = new(startX + x * slotSize, startY, slotSize, slotSize);
                 if (x == hotbar.selectedSlot)
                 {
-                    sb.Draw(TextureAtlas.atlas, rect, selectedSprite.spriteTextureRect, Color.White);
+                    sb.Draw(TextureAtlas.atlas, rect, selectedSlot, Color.White);
                 }
                 else
                 {
-                    sb.Draw(TextureAtlas.atlas, rect, slotSprite.spriteTextureRect, Color.White);
+                    sb.Draw(TextureAtlas.atlas, rect, slot, Color.White);
                 }
                 if (hotbar.hotbarItems[x] != null)
                 {
-                    sb.Draw(TextureAtlas.item_atlas, rect, hotbar.hotbarItems[x].sprite.spriteTextureRect, Color.White);
+                    sb.Draw(TextureAtlas.atlas, rect, hotbar.hotbarItems[x].sprite.spriteTextureRect, Color.White);
                 }
             }
             sb.End();

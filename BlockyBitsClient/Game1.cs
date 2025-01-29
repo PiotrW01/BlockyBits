@@ -6,10 +6,12 @@ using BlockyBitsCommon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SharpGLTF.Schema2;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Sockets;
+using Windows.UI.WebUI;
 
 public class Game1 : Game
 {
@@ -18,6 +20,7 @@ public class Game1 : Game
     public Point screenCenter;
     public static Camera camera;
     public static RenderTarget2D renderTarget;
+    public static RenderTarget2D renderTarget2;
     
     public double elapsedTime = 0f;
     public static Game1 game;
@@ -34,23 +37,32 @@ public class Game1 : Game
         {
             game = this;
         }
-        _graphics = new GraphicsDeviceManager(this);
+        _graphics = new GraphicsDeviceManager(this)
+        {
+            GraphicsProfile = GraphicsProfile.HiDef
+        };
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+
+
+        return;
     }
 
     protected override void Initialize()
     {
+        _graphics.PreferredBackBufferHeight = 720;
+        _graphics.PreferredBackBufferWidth = 1280;
+        _graphics.ApplyChanges();
+
+        renderTarget = new(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24);
+        renderTarget2 = new(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24);
+        Shaders.WaterShader.Parameters["tex"].SetValue(renderTarget);
+
         camera = new Camera(GraphicsDevice);
         ObjectManager.Add(camera);
         ChunkManager.Start();
         Debugger.Enable(GraphicsDevice);
-        //_graphics.GraphicsProfile = GraphicsProfile.HiDef;
-        _graphics.PreferredBackBufferHeight = 720;
-        _graphics.PreferredBackBufferWidth = 1280;
-        _graphics.ApplyChanges();
-        renderTarget = new(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24);
-        Shaders.WaterShader.Parameters["tex"].SetValue(renderTarget);
+        
         //client = new TcpClient("localhost", Network.serverPort);
         screenCenter = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
         Mouse.SetPosition(screenCenter.X, screenCenter.Y);
@@ -93,21 +105,34 @@ public class Game1 : Game
     protected override void Draw(GameTime gameTime)
     {
         Shaders.UpdateShaderParameters();
-        
+
         GraphicsDevice.SetRenderTarget(renderTarget);
         GraphicsDevice.Clear(Color.CornflowerBlue);
+
+        GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+        GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
+        GraphicsDevice.BlendState = BlendState.Opaque;
         GraphicsDevice.SamplerStates[1] = new SamplerState()
         {
-            Filter = TextureFilter.Point
+            Filter = TextureFilter.Point,
+            AddressU = TextureAddressMode.Clamp,
+            AddressV = TextureAddressMode.Clamp,
         };
         ChunkManager.RenderChunks();
-        
+
+
+        GraphicsDevice.SetRenderTarget(renderTarget2);
+        GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+        GraphicsDevice.BlendState = BlendState.Opaque;
+        GraphicsDevice.Clear(ClearOptions.Target, Color.CornflowerBlue, 0.0f, 0);
+
+        ChunkManager.RenderChunks();
         ChunkManager.RenderWater();
         ObjectManager.RenderObjects();
+        
         GraphicsDevice.SetRenderTarget(null);
-
         spriteBatch.Begin();
-        spriteBatch.Draw(renderTarget, Vector2.Zero, Color.White);
+        spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
         RenderDebugInfo();
         spriteBatch.End();
 
@@ -126,6 +151,7 @@ public class Game1 : Game
         if (Input.IsKeyJustPressed(Keys.F11))
         {
             renderTarget.Dispose();
+            renderTarget2.Dispose();
             if (_graphics.IsFullScreen)
             {
                 _graphics.PreferredBackBufferHeight = 720;
@@ -139,7 +165,12 @@ public class Game1 : Game
             }
             _graphics.ToggleFullScreen();
             _graphics.ApplyChanges();
+            
+            screenCenter = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
+            Mouse.SetPosition(screenCenter.X, screenCenter.Y);
             renderTarget = new(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24);
+            renderTarget2 = new(GraphicsDevice, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight, false, SurfaceFormat.Color, DepthFormat.Depth24);
+            Shaders.WaterShader.Parameters["tex"].SetValue(renderTarget);
         }
         if (Input.IsKeyJustPressed(Keys.F3))
         {
