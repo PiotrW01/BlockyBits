@@ -81,7 +81,10 @@ public class Game1 : Game
     protected override void Update(GameTime gameTime)
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Microsoft.Xna.Framework.Input.Keyboard.GetState().IsKeyDown(Keys.Escape))
+        {
+            ChunkManager.Stop();
             Exit();
+        }
 
         timeSinceLastUpdate += gameTime.ElapsedGameTime.TotalSeconds;
         frameCounter++;

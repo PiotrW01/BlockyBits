@@ -6,8 +6,8 @@ using System.Diagnostics;
 internal class Movement: Component
 {
     public Vector3 velocity = Vector3.Zero;
-    float acceleration = 8.0f;
-    float maxSpeed = 20f;
+    float acceleration = 6.0f;
+    float maxSpeed = 40f;
     float friction = 3.0f;
     private float g = 14.81f;
     private float maxGravityAcceleration = 50f;

@@ -68,38 +68,21 @@ public class Utils
         x = (int)((globalPos.X % Chunk.width + Chunk.width) % Chunk.width);
         z = (int)((globalPos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
 
-        ChunkManager.chunks.TryGetValue(chunkPos, out Chunk chunk);
-        if (chunk != null)
+        Block b = ChunkManager.GetBlockAt(globalPos);
+        if (b != null)
         {
-            if(chunk.HasBlockAt(new Vector3(x, (int)globalPos.Y, z)))
-            {
-                return new BoundingBox(new Vector3(chunkPos.X * Chunk.width + x,(int)globalPos.Y, chunkPos.Y * Chunk.depth + z), 
-                                       new Vector3(chunkPos.X * Chunk.width + x + 1, (int)globalPos.Y + 1, chunkPos.Y * Chunk.depth + z + 1));
-            }
+            return new BoundingBox(new Vector3(chunkPos.X * Chunk.width + x, (int)globalPos.Y, chunkPos.Y * Chunk.depth + z),
+                       new Vector3(chunkPos.X * Chunk.width + x + 1, (int)globalPos.Y + 1, chunkPos.Y * Chunk.depth + z + 1));
         }
         return null;
     }
 
     public static bool CollidesWithBlockAt(Vector3 pos)
     {
-        int x, z;
-        Vector2 chunkPos = WorldToChunkPosition(pos);
-
-        // Compute local block coordinates (ensuring positive values)
-        x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);
-        z = (int)((pos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
-
-        ChunkManager.chunks.TryGetValue(chunkPos, out Chunk chunk);
-        if(chunk != null)
+        Block block = ChunkManager.GetBlockAt(pos);
+        if(block != null && block.hasCollisions)
         {
-            Block block = chunk.GetBlockAtLocalPos(new Vector3(x, (int)pos.Y, z));
-            if (block == null || !block.hasCollisions)
-            {
-                return false;
-            }
             return true;
-
-            return chunk.HasBlockAt(new Vector3(x, (int)pos.Y, z));
         }
         return false;
     }

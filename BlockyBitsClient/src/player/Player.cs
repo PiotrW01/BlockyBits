@@ -149,71 +149,16 @@ public class Player: GameObject
 
     private void RemoveBlockAt(Vector3 globalCoord)
     {
-        ChunkManager.chunks[Utils.WorldToChunkPosition(globalCoord)].RemoveBlock(Utils.WorldToLocalChunkCoord(globalCoord));
+        ChunkManager.RemoveBlockAt(globalCoord);
     }
 
     private void PlaceBlockAt(Vector3 globalCoord)
     {
-        ChunkManager.chunks[Utils.WorldToChunkPosition(globalCoord)].SetBlock(Utils.WorldToLocalChunkCoord(globalCoord), new Block(Block.Type.Stone));
+        ChunkManager.PlaceBlockAt(globalCoord, new Block(Block.Type.Stone));
     }
 
     private int abc(float x)
     {
         return (int)Math.Floor(x);
     }
-
-    private void RayCast(Vector3 startPos, Vector3 direction, int reach)
-    {
-        direction = Vector3.Normalize(direction); // Normalize direction vector
-
-        Vector3 pos = startPos;
-        Vector3 step = new Vector3(
-            direction.X > 0 ? 1 : -1,
-            direction.Y > 0 ? 1 : -1,
-            direction.Z > 0 ? 1 : -1
-        );
-
-        Vector3 gridPos = Utils.WorldToLocalChunkCoord(startPos); // Convert to integer grid space
-
-        Vector3 tMax = new Vector3(
-            (step.X > 0 ? (MathF.Floor(pos.X) + 1 - pos.X) : (pos.X - MathF.Floor(pos.X))) / MathF.Abs(direction.X),
-            (step.Y > 0 ? (MathF.Floor(pos.Y) + 1 - pos.Y) : (pos.Y - MathF.Floor(pos.Y))) / MathF.Abs(direction.Y),
-            (step.Z > 0 ? (MathF.Floor(pos.Z) + 1 - pos.Z) : (pos.Z - MathF.Floor(pos.Z))) / MathF.Abs(direction.Z)
-        );
-
-        Vector3 tDelta = new Vector3(
-            MathF.Abs(1 / direction.X),
-            MathF.Abs(1 / direction.Y),
-            MathF.Abs(1 / direction.Z)
-        );
-
-        for (int i = 0; i <= reach; i++)
-        {
-            // Check for collision with block at current grid position
-            if (Utils.CollidesWithBlockAt(gridPos))
-            {
-                ChunkManager.chunks[Utils.WorldToChunkPosition(gridPos)].RemoveBlock(gridPos);
-                Debug.WriteLine("collision at reach " + i);
-                break;
-            }
-
-            // Move to the next voxel along the ray
-            if (tMax.X < tMax.Y && tMax.X < tMax.Z)
-            {
-                tMax.X += tDelta.X;
-                gridPos.X += step.X;
-            }
-            else if (tMax.Y < tMax.Z)
-            {
-                tMax.Y += tDelta.Y;
-                gridPos.Y += step.Y;
-            }
-            else
-            {
-                tMax.Z += tDelta.Z;
-                gridPos.Z += step.Z;
-            }
-        }
-    }
-
 }
