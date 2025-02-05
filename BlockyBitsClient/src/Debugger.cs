@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlockyBitsClient.src.Managers;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,14 +34,24 @@ internal class Debugger
         {
             VertexColorEnabled = true,
             World = Matrix.Identity,
-            View = Game1.camera.viewMatrix,
-            Projection = Game1.camera.projectionMatrix,
+            View = Game1.MainCamera.viewMatrix,
+            Projection = Game1.MainCamera.projectionMatrix,
         };
     }
 
     public static void QueueDraw(Vector3 from, Vector3 to, Color color)
     {
         drawQueue.Add(new DrawRequest(from, to, color));
+    }
+
+    public static void QueueDrawBlockModel(Vector3 pos)
+    {
+        Block b = ChunkManager.GetBlockAt(pos);
+        var vertices = Block.GetBlockProperties(b.ID).ModelShape.vPositions;
+        for (int i = 0; i < vertices.Count / 2; i++)
+        {
+            drawQueue.Add(new DrawRequest(pos + vertices[i], pos + vertices[i + 1], Color.Purple));
+        }
     }
 
     public static void QueueDraw(BoundingBox box)
@@ -76,7 +87,8 @@ internal class Debugger
     public static void DrawDebugLines()
     {
         if (drawQueue.Count == 0) return;
-        effect.View = Game1.camera.viewMatrix;
+        effect.View = Game1.MainCamera.viewMatrix;
+        effect.Projection = Game1.MainCamera.projectionMatrix;
         VertexPositionColor[] vertices = new VertexPositionColor[drawQueue.Count * 2];
         int index = 0;
 

@@ -20,12 +20,36 @@
     <PackageReference Include="SharpGLTF.Runtime" Version="1.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BlockyBitsCommon\BlockyBitsCommon.csproj" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Update="assets\blocks\oak_log.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\models\rail_block.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\shaders\Outline.mgfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="files\rail_block.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="files\withanimationmodel.gltf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+     <Content Include="assets\**">
+     <Link>assets\%(RecursiveDir)\%(Filename)%(Extension)</Link>
+     <TargetPath>assets\%(RecursiveDir)\%(Filename)%(Extension)</TargetPath>
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="assets\blocks\oak_log.json" />
+    <Content Remove="assets\models\rail_block.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="assets\blocks\default.json" Link="assets\models\default.json" />
+    <Content Update="assets\rail_block.json" Link="files\rail_block.json" />
   </ItemGroup>
   <Target Name="RestoreDotnetTools" BeforeTargets="Restore">
     <Message Text="Restoring dotnet tools" Importance="High" />

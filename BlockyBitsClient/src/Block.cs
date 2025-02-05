@@ -1,163 +1,291 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlockyBitsClient.src;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
+using System.Xml.Linq;
 
 public class Block
 {
-    public enum Type {
-        Air,
-        Dirt,
-        Stone,
-        Grass,
-        Water,
-        OakLog
-    }
-    public static int blockResolution = 16;
-    public Type type;
-    public bool isTransparent = false;
-    public bool hasCollisions = true;
+    public ushort ID;
 
-    public static Dictionary<Block.Type, Vector2[]> blockUVs;
-    private static Dictionary<Block.Type, BlockInformation> BlockInfo = new();
+    private static Dictionary<String, BlockProperties> Blocks2 = new();
+    private static Dictionary<String, ushort> BlockRegistry = new();
+    private static Dictionary<ushort, String> idToBlock = new();
 
-    private static Dictionary<String, Vector2> UVCoords;
-    private static Dictionary<String, Vector2> PixelCoords = new();
-
-    public Block(Block.Type type)
+    public Block(string name)
     {
-        this.type = type;
-        if(type == Type.Water)
+        if(BlockRegistry.TryGetValue(name, out ushort id)){
+            ID = id;
+        } else
         {
-            hasCollisions = false;
-            isTransparent = true;
+            ID = 1;
         }
     }
 
-
-
-
-    public static void InitializeBlocks()
+    public Block(ushort id)
     {
-        blockUVs = new()
+        if (BlockRegistry.ContainsValue(id))
         {
-            {Block.Type.Dirt, Utils.RepeatValues6(new Vector2(0,0))},
-            {Block.Type.Stone, Utils.RepeatValues6(new Vector2(1,0))},
-            {Block.Type.Water, Utils.RepeatValues6(new Vector2(2,0))},
-        };
-
-        PixelCoords = new()
-        {
-            {"dirt",  new Vector2(2,15)},
-            {"stone",  new Vector2(14,28)},
-            {"water",  new Vector2(0,0)},
-            {"grass-top",  new Vector2(28,2)},
-            {"grass-side",  new Vector2(28,1)},
-            {"raw-chicken",  new Vector2(36,18)},
-            {"oak-log-side", new Vector2(15,19)},
-            {"oak-log-top", new Vector2(16,19)},
-        };
-        UVCoords = new();
-
-        CalculateUVs();
-
-
-
-
-
-        //front, back, left, right, top, bottom
-        BlockInfo.Add(Type.Dirt, new()
-        {
-            UVs = Utils.GenerateUVs("dirt", "dirt", "dirt", "dirt", "dirt", "dirt"),
-        });
-
-        BlockInfo.Add(Type.Stone, new()
-        {
-            UVs = Utils.GenerateUVs("stone", "stone", "stone", "stone", "stone", "stone"),
-        });
-
-        BlockInfo.Add(Type.Water, new()
-        {
-            UVs = Utils.GenerateUVs("stone", "stone", "stone", "stone", "stone", "stone"),
-        });
-
-        BlockInfo.Add(Type.Grass, new()
-        {
-            UVs = Utils.GenerateUVs("grass-side", "grass-side", "grass-side", "grass-side", "grass-top", "dirt"),
-        });
-
-        BlockInfo.Add(Type.OakLog, new()
-        {
-            UVs = Utils.GenerateUVs("oak-log-side", "oak-log-side", "oak-log-side", "oak-log-side", "oak-log-top", "oak-log-top"),
-        });
+            ID = id;
+        }
     }
 
-    private static void CalculateUVs()
+    public static void LoadBlocks()
     {
-        foreach (var UVs in blockUVs.Values)
+        var blockNames = Directory.GetFiles("assets/blocks");
+
+        ushort idCounter = 1;
+        foreach (var blockPath in blockNames)
         {
-            for (int i = 0; i < UVs.Length; i++) 
+            var json = File.ReadAllText(blockPath);
+            BlockProperties prop = JsonSerializer.Deserialize<BlockProperties>(json, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true});
+
+            if(prop.Faces.Count > 0)
             {
-                UVs[i] = new Vector2(UVs[i].X*TextureAtlas.horizontalOffset, UVs[i].Y*TextureAtlas.verticalOffset);
+                prop.ModelShape = new(Models.GetModelShape("default"));
+                prop.ModelShape.vTextureUV.Clear();
+
+                Vector2 uv0;
+                Vector2 uv1;
+                Vector2 uv2;
+                Vector2 uv3;
+
+                if (prop.Faces.ContainsKey("all"))
+                {
+                    uv0 = TextureAtlas.GetUVCoordsof(prop.Faces["all"]);
+                    uv1 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                    uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                    uv3 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+
+                    //north
+                    prop.ModelShape.vTextureUV.Add(uv3);
+                    prop.ModelShape.vTextureUV.Add(uv1);
+                    prop.ModelShape.vTextureUV.Add(uv0);
+                    prop.ModelShape.vTextureUV.Add(uv2);
+
+                    //east
+                    prop.ModelShape.vTextureUV.Add(uv3);
+                    prop.ModelShape.vTextureUV.Add(uv1);
+                    prop.ModelShape.vTextureUV.Add(uv0);
+                    prop.ModelShape.vTextureUV.Add(uv2);
+
+                    //south
+                    prop.ModelShape.vTextureUV.Add(uv3);
+                    prop.ModelShape.vTextureUV.Add(uv1);
+                    prop.ModelShape.vTextureUV.Add(uv0);
+                    prop.ModelShape.vTextureUV.Add(uv2);
+
+                    //west
+                    prop.ModelShape.vTextureUV.Add(uv3);
+                    prop.ModelShape.vTextureUV.Add(uv1);
+                    prop.ModelShape.vTextureUV.Add(uv0);
+                    prop.ModelShape.vTextureUV.Add(uv2);
+
+                    //up
+                    prop.ModelShape.vTextureUV.Add(uv3);
+                    prop.ModelShape.vTextureUV.Add(uv1);
+                    prop.ModelShape.vTextureUV.Add(uv0);
+                    prop.ModelShape.vTextureUV.Add(uv2);
+
+                    //down
+                    prop.ModelShape.vTextureUV.Add(uv3);
+                    prop.ModelShape.vTextureUV.Add(uv1);
+                    prop.ModelShape.vTextureUV.Add(uv0);
+                    prop.ModelShape.vTextureUV.Add(uv2);
+                } 
+                else
+                {
+                    if (prop.Faces.ContainsKey("sides"))
+                    {
+
+                        uv0 = TextureAtlas.GetUVCoordsof(prop.Faces["sides"]);
+                        uv1 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                        uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        uv3 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+
+                        //north
+                        prop.ModelShape.vTextureUV.Add(uv3);
+                        prop.ModelShape.vTextureUV.Add(uv1);
+                        prop.ModelShape.vTextureUV.Add(uv0);
+                        prop.ModelShape.vTextureUV.Add(uv2);
+
+
+                        //east
+                        prop.ModelShape.vTextureUV.Add(uv3);
+                        prop.ModelShape.vTextureUV.Add(uv1);
+                        prop.ModelShape.vTextureUV.Add(uv0);
+                        prop.ModelShape.vTextureUV.Add(uv2);
+
+                        //south
+                        prop.ModelShape.vTextureUV.Add(uv3);
+                        prop.ModelShape.vTextureUV.Add(uv1);
+                        prop.ModelShape.vTextureUV.Add(uv0);
+                        prop.ModelShape.vTextureUV.Add(uv2);
+
+                        //west
+                        prop.ModelShape.vTextureUV.Add(uv3);
+                        prop.ModelShape.vTextureUV.Add(uv1);
+                        prop.ModelShape.vTextureUV.Add(uv0);
+                        prop.ModelShape.vTextureUV.Add(uv2);
+
+                    }
+                    else
+                    {
+                        uv0 = TextureAtlas.GetUVCoordsof(prop.Faces["north"]);
+                        uv1 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                        uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        uv3 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+
+                        //north
+                        prop.ModelShape.vTextureUV.Add(uv3);
+                        prop.ModelShape.vTextureUV.Add(uv1);
+                        prop.ModelShape.vTextureUV.Add(uv0);
+                        prop.ModelShape.vTextureUV.Add(uv2);
+
+
+                        uv0 = TextureAtlas.GetUVCoordsof(prop.Faces["east"]);
+                        uv1 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                        uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        uv3 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+
+                        //east
+                        prop.ModelShape.vTextureUV.Add(uv3);
+                        prop.ModelShape.vTextureUV.Add(uv1);
+                        prop.ModelShape.vTextureUV.Add(uv0);
+                        prop.ModelShape.vTextureUV.Add(uv2);
+
+
+                        uv0 = TextureAtlas.GetUVCoordsof(prop.Faces["south"]);
+                        uv1 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                        uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        uv3 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+
+                        //south
+                        prop.ModelShape.vTextureUV.Add(uv3);
+                        prop.ModelShape.vTextureUV.Add(uv1);
+                        prop.ModelShape.vTextureUV.Add(uv0);
+                        prop.ModelShape.vTextureUV.Add(uv2);
+
+                        uv0 = TextureAtlas.GetUVCoordsof(prop.Faces["west"]);
+                        uv1 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                        uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        uv3 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+
+                        //west
+                        prop.ModelShape.vTextureUV.Add(uv3);
+                        prop.ModelShape.vTextureUV.Add(uv1);
+                        prop.ModelShape.vTextureUV.Add(uv0);
+                        prop.ModelShape.vTextureUV.Add(uv2);
+                    }
+
+                    //up
+                    uv0 = TextureAtlas.GetUVCoordsof(prop.Faces["top"]);
+                    uv1 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                    uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                    uv3 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+
+
+                    prop.ModelShape.vTextureUV.Add(uv3);
+                    prop.ModelShape.vTextureUV.Add(uv1);
+                    prop.ModelShape.vTextureUV.Add(uv0);
+                    prop.ModelShape.vTextureUV.Add(uv2);
+
+                    uv0 = TextureAtlas.GetUVCoordsof(prop.Faces["bottom"]);
+                    uv1 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                    uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                    uv3 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+
+                    //down
+                    prop.ModelShape.vTextureUV.Add(uv3);
+                    prop.ModelShape.vTextureUV.Add(uv1);
+                    prop.ModelShape.vTextureUV.Add(uv0);
+                    prop.ModelShape.vTextureUV.Add(uv2);
+                }
+                prop.ModelShape.RefreshVertices();
+                Models.TryAddModelShape(prop.name, prop.ModelShape);
+            } 
+            else
+            {
+                if(Models.TryGetModelShape(prop.name, out ModelShape shape))
+                {
+                    prop.ModelShape = shape;
+                } else
+                {
+                    Debug.WriteLine($"Block {prop.name} doesn't have a model, skipping...");
+                    continue;
+                }
+            }
+
+
+
+            if(Blocks2.TryAdd(prop.name, prop))
+            {
+                if(prop.id != 0)
+                {
+                    if(BlockRegistry.TryAdd(prop.name, prop.id))
+                    {
+                        idToBlock.Add(prop.id, prop.name);
+                    }
+                    else
+                    {
+                        BlockRegistry.Add(prop.name, idCounter);
+                        idToBlock.Add(idCounter, prop.name);
+                        idCounter++;
+                    }
+                } 
+                else
+                {
+                    BlockRegistry.Add(prop.name, idCounter);
+                    idToBlock.Add(idCounter, prop.name);
+                    idCounter++;
+                }
             }
         }
 
-        // offset texture coordinates to correct texture UV coordinates
-        foreach(var key in PixelCoords.Keys)
+
+
+
+    }
+
+    public static BlockProperties GetBlockProperties(string name)
+    {
+        if(Blocks2.TryGetValue(name, out var prop))
         {
-            Vector2 newCoords = PixelCoords[key];
-            PixelCoords[key] = new Vector2(newCoords.X * Block.blockResolution, newCoords.Y * Block.blockResolution);
-
-            newCoords.X *= TextureAtlas.horizontalOffset;
-            newCoords.Y *= TextureAtlas.verticalOffset;
-            UVCoords.Add(key, newCoords);
+            return prop;
         }
+        return null;
     }
 
-
-
-    public static Vector2[] GetUVs(Block.Type blockType)
+    public static string IdToName(ushort id)
     {
-        Vector2[] UVs = blockUVs[blockType];
-        return blockUVs[blockType];
+        return idToBlock[id];
     }
 
-
-    public static Vector2 GetUVCoordsof(String name)
+    public static ushort NameToId(string name)
     {
-        return UVCoords[name];
+        return BlockRegistry[name];
     }
-
-    public static Vector2 GetPixelCoordsOf(String name)
+    public static BlockProperties GetBlockProperties(ushort id)
     {
-        return PixelCoords[name];
+        return Blocks2[idToBlock[id]];
     }
-
-    public static BlockInformation GetBlockInformation(Block.Type type)
-    {
-        return BlockInfo[type];
-    }
-
-
 }
 
-public class BlockInformation()
+public class BlockProperties
 {
-    public int hardness = 0;
-    public bool isTransparent = false;
-    public bool hasCollisions = true;
+    public string name {  get; set; }
+    public ushort id { get; set; } = 0;
+    public int Hardness { get; set; } = 0;
+    public bool IsTransparent { get; set; } = false;
+    public bool IsFluid {  get; set; } = false;
+    public float FluidDensity { get; set; } = 1.0f;
+    public bool HasCollisions { get; set; } = true;
+    public Dictionary<string, string> Faces { get; set; } = new();
 
-    // Front back left right top bottom
-    public Vector2[] UVs =
-    {
-
-        };
-
-
-
-
-
-    public int[] vertices = [];
-    public int[] indices = [0, 1, 2, 0, 2, 3];
+    public ModelShape ModelShape { get; set; }
 
 }
 

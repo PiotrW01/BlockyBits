@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection.Metadata;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 public static class TextureAtlas
@@ -23,17 +24,21 @@ public static class TextureAtlas
     public static float itemXOffset;
     public static float itemYOffset;
 
+    public static int resolution = 16;
     public static Texture2D noise;
 
-    public static Sprite GetSpriteAt(int x, int y)
-    {
-        return new Sprite(new Rectangle(x * Block.blockResolution, y * Block.blockResolution, Block.blockResolution, Block.blockResolution));
-    }
+    private static Dictionary<String, Vector2> textureCoords = new();
+    private static Dictionary<String, Vector2> UVCoords = new();
 
     public static Rectangle GetTextureOf(string name)
     {
-        Vector2 atlasCoords = Block.GetPixelCoordsOf(name);
-        return new Rectangle((int)atlasCoords.X, (int)atlasCoords.Y, Block.blockResolution, Block.blockResolution);
+        Vector2 coords = textureCoords[name];
+        return new Rectangle((int)coords.X, (int)coords.Y, resolution, resolution);
+    }
+
+    public static Vector2 GetUVCoordsof(string name)
+    {
+        return UVCoords[name];
     }
 
     public static void LoadAtlas(ContentManager cm)
@@ -47,9 +52,18 @@ public static class TextureAtlas
         itemYOffset = 16f / item_atlas.Height;
 
 
-        horizontalOffset = (float)Block.blockResolution / (float)atlas.Width;
-        verticalOffset = (float)Block.blockResolution / (float)atlas.Height;
+        horizontalOffset = (float)resolution / (float)atlas.Width;
+        verticalOffset = (float)resolution / (float)atlas.Height;
         noise = cm.Load<Texture2D>("textures/perlin512");
-    }
 
+
+        string json = File.ReadAllText("assets/texture_names.json");
+        var tCoords = JsonSerializer.Deserialize<Dictionary<String, int[]>>(json);
+
+        foreach(var name in tCoords.Keys)
+        {
+            textureCoords.TryAdd(name, new Vector2(tCoords[name][0] * resolution, tCoords[name][1] * resolution));
+            UVCoords.TryAdd(name, new Vector2(tCoords[name][0] * horizontalOffset, tCoords[name][1] * verticalOffset));
+        }
+    }
 }

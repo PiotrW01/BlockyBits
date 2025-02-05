@@ -30,9 +30,6 @@
     <PackageReference Include="SharpGLTF.Runtime" Version="1.0.3" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BlockyBitsCommon\BlockyBitsCommon.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="files\cubeoncube.gltf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -1,0 +1,10 @@
+{
+	"name": "dirt",
+	"isTransparent": false,
+	"isFluid": false,
+	"fluidDensity": 0,
+	"hasCollisions": true,
+	"faces": {
+		"all": "dirt"
+	}
+}

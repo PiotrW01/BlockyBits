@@ -1,0 +1,16 @@
+{
+    "dirt": [2,15],
+    "cobblestone": [4,15],
+    "stone": [14,28],
+    "grass_top": [28,2],
+    "grass_side": [28,1],
+    "oak_log_side": [15,19],
+    "oak_log_top": [16,19],
+    "coal_ore": [1,15],
+    "ladder": [4,16],
+    "raw_chicken": [36,18],
+    "water": [1,1],
+  "grass_block_side": [ 28, 1 ],
+  "grass_block_top": [ 28, 2 ],
+  "outline":  [0,0]
+}

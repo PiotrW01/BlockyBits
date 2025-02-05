@@ -28,26 +28,10 @@ public class Utils
         return result;
     }
 
-    public static Vector2[] GenerateUVs(String front, String back, String left, String right, String top, String bottom)
-    {
-        Vector2 f = Block.GetUVCoordsof(front);
-        Vector2 bck = Block.GetUVCoordsof(back);
-        Vector2 l = Block.GetUVCoordsof(left);
-        Vector2 r = Block.GetUVCoordsof(right);
-        Vector2 t = Block.GetUVCoordsof(top);
-        Vector2 bt = Block.GetUVCoordsof(bottom);
-
-        return [f,bck,l,r,t,bt];
-    }
-
-
-
-
-
     // returns the x,y of the chunk
     public static Vector2 WorldToChunkPosition(Vector3 pos)
     {
-        return new Vector2((int)Math.Floor(pos.X / Chunk.width), (int)Math.Floor(pos.Z / Chunk.depth));
+        return new Vector2((int)Math.Floor(pos.X / Chunk.width), (int)Math.Floor(pos.Z / Chunk.width));
     }
 
     // returns the x,y,z relative to the chunk start point
@@ -55,7 +39,7 @@ public class Utils
     {
         int x, z;
         x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);
-        z = (int)((pos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
+        z = (int)((pos.Z % Chunk.width + Chunk.width) % Chunk.width);
         return new Vector3(x, (int)pos.Y, z);
     }
 
@@ -66,33 +50,35 @@ public class Utils
 
         // Compute local block coordinates (ensuring positive values)
         x = (int)((globalPos.X % Chunk.width + Chunk.width) % Chunk.width);
-        z = (int)((globalPos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
+        z = (int)((globalPos.Z % Chunk.width + Chunk.width) % Chunk.width);
 
         Block b = ChunkManager.GetBlockAt(globalPos);
         if (b != null)
         {
-            return new BoundingBox(new Vector3(chunkPos.X * Chunk.width + x, (int)globalPos.Y, chunkPos.Y * Chunk.depth + z),
-                       new Vector3(chunkPos.X * Chunk.width + x + 1, (int)globalPos.Y + 1, chunkPos.Y * Chunk.depth + z + 1));
+            return new BoundingBox(new Vector3(chunkPos.X * Chunk.width + x, (int)globalPos.Y, chunkPos.Y * Chunk.width + z),
+                       new Vector3(chunkPos.X * Chunk.width + x + 1, (int)globalPos.Y + 1, chunkPos.Y * Chunk.width + z + 1));
         }
         return null;
     }
 
     public static bool CollidesWithBlockAt(Vector3 pos)
     {
-        Block block = ChunkManager.GetBlockAt(pos);
-        if(block != null && block.hasCollisions)
-        {
-            return true;
+        if(ChunkManager.GetBlockAt(pos, out Block b)){
+            var info = Block.GetBlockProperties(b.ID);
+            if(info.HasCollisions && !info.IsFluid)
+            {
+                return true;
+            }
         }
         return false;
     }
 
     public static Vector2 GetPlayerChunkPos()
     {
-        Vector3 pos = Game1.player.Transform.GlobalPosition;
+        Vector3 pos = Game1.Player.Transform.GlobalPosition;
         int x, z;
         x = (int)((pos.X % Chunk.width + Chunk.width) % Chunk.width);
-        z = (int)((pos.Z % Chunk.depth + Chunk.depth) % Chunk.depth);
+        z = (int)((pos.Z % Chunk.width + Chunk.width) % Chunk.width);
         return new Vector2(x, z);
     }
 
@@ -110,7 +96,7 @@ public class Utils
 
     public static float Lerp(float a, float b, float f)
     {
-        return (a * (1.0f - f) + (b * f));
+        return a * (1.0f - f) + (b * f);
     }
 }
 

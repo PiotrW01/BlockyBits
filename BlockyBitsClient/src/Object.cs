@@ -10,13 +10,21 @@ using System.Linq;
 public abstract class Object
 {
     public Transform Transform = new();
-    public Object parent = null;
-    public List<Object> children = new List<Object>();
-    public List<Component> components = new List<Component>();
+    Object parent = null;
+    List<Object> children = new List<Object>();
+    List<Component> components = new List<Component>();
     
     public virtual void Start() { }
     public virtual void Render() { }
     public virtual void Update(float deltaTime) { }
+    public virtual void HandleMouseMove(float deltaTime, Vector2 mouseVec) { }
+    public virtual void HandleInput(float deltaTime) { }
+    public virtual void HandleMouseClick() { }
+    public virtual void HandleScrollInput() { }
+    public virtual void OnDelete() { }
+    public virtual void LoadContent(ContentManager cm) { }
+
+
 
     public void RenderChildren()
     {
@@ -26,13 +34,13 @@ public abstract class Object
             child.RenderChildren();
         }
     }
-
     public void UpdateChildrenAndComponents(float deltaTime)
     {
         // adjusts each childs global pos relative to parent based on their local pos
         foreach (var child in children)
         {
             child.Transform.GlobalPosition = Transform.GlobalPosition + child.Transform.Position;
+            child.Update(deltaTime);
             child.UpdateChildrenAndComponents(deltaTime);
         }
         foreach (var c in components)
@@ -40,7 +48,6 @@ public abstract class Object
             c.Update(deltaTime);
         }
     }
-
     public void ChildrenStart(ContentManager cm)
     {
         foreach(var child in children)
@@ -50,7 +57,6 @@ public abstract class Object
             child.ChildrenStart(cm);
         }
     }
-
     public void ComponentsStart(ContentManager cm)
     {
         foreach(Component c in components)
@@ -64,7 +70,6 @@ public abstract class Object
             child.ComponentsStart(cm);
         }
     }
-
     public void HandleComponentInput(float deltaTime)
     {
         foreach(var component in components)
@@ -72,7 +77,6 @@ public abstract class Object
             component.HandleInput(deltaTime);
         }
     }
-
     public void HandleComponentMouseMove(float deltaTime, Vector2 mouseVec)
     {
         foreach (var component in components)
@@ -80,7 +84,6 @@ public abstract class Object
             component.HandleMouseMove(deltaTime, mouseVec);
         }
     }
-
     public void HandleChildrenMouseMove(float deltaTime, Vector2 mouseVec)
     {
         foreach( var child in children)
@@ -89,16 +92,6 @@ public abstract class Object
             child.HandleChildrenMouseMove(deltaTime, mouseVec);
         }
     }
-
-    public virtual void HandleInput(float deltaTime) { }
-
-    // mouseVec is the relative position of the mouse to the screen center
-    public virtual void HandleMouseMove(float deltaTime, Vector2 mouseVec) { }
-
-    public virtual void HandleMouseClick() { }
-
-    public virtual void HandleScrollInput() { }
-
     public void HandleChildrenScrollInput()
     {
         foreach(var child in children)
@@ -107,12 +100,6 @@ public abstract class Object
             child.HandleChildrenScrollInput();
         }
     }
-
-    public virtual void LoadContent(ContentManager cm)
-    {
-
-    }
-
     public void HandleChildrenInput(float delta)
     {
         foreach(var child in children)
@@ -151,43 +138,22 @@ public abstract class Object
             child.OnDeleteChildrenAndComponents();
         }
     }
-
-    public virtual void OnDelete()
-    {
-
-    }
-
     public void AddChild(Object c)
     {
         c.parent = this;
         children.Add(c);
     }
-
     public void AddComponent(Component c)
     {
-/*        if(components.Any(component => component.GetType() == c.GetType()))
-        {
-            Debug.WriteLine($"Trying to assign component to object {GetType()} that already has this kind of component: {c.GetType()}");
-            return;
-        }*/
-
         c.SetOwner(this);
         components.Add(c);
     }
-
     public void AddComponent<T>() where T : Component, new()
     {
-/*        if (components.Any(component => component is T))
-        {
-            Debug.WriteLine($"Trying to assign component to object {GetType()} that already has this kind of component: {typeof(T)}");
-            return;
-        }*/
-
         T c = new T();
         c.SetOwner(this);
         components.Add(c);
     }
-
     public T GetComponent<T>() where T : Component
     {
         foreach(Component c in components)
@@ -195,5 +161,24 @@ public abstract class Object
             if (c.GetType() == typeof(T)) return (T)c;
         }
         return default;
+    }
+    public bool TryGetComponent<T>(out T component) where T : Component
+    {
+        foreach (Component c in components)
+        {
+            if (c.GetType() == typeof(T))
+            {
+                component = (T)c;
+                return true;
+            }
+
+        }
+        component = null;
+        return false;
+    }
+
+    public Object GetParent()
+    {
+        return parent;
     }
 }

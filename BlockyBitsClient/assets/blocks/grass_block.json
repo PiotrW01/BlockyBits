@@ -1,0 +1,12 @@
+{
+	"name": "grass_block",
+	"isTransparent": false,
+	"isFluid": false,
+	"fluidDensity": 0,
+	"hasCollisions": true,
+	"faces": {
+		"sides": "grass_block_side",
+		"top": "grass_block_top",
+		"bottom": "dirt"
+	}
+}

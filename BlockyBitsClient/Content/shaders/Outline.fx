@@ -11,23 +11,6 @@
 float4x4 World;
 float4x4 View;
 float4x4 Projection;
-float3 GridPos;
-//Texture2D tex;
-sampler2D noise;
-sampler2D tex : register(s0);
-float Time;
-
-//cbuffer Time : register(b1)
-//{
-//    float Time;
-//}
-
-cbuffer LightBuffer : register(b2)
-{
-    float3 LightDirection; // Direction of the light (normalized)
-    float4 LightColor; // Color of the light (RGBA)
-    float4 AmbientColor; // Ambient color
-};
 
 // Required attributes of the input vertices
 struct VertexShaderInput
@@ -43,28 +26,24 @@ struct VertexShaderOutput
     float4 Position : POSITION0;
     float3 Normal : NORMAL0;
     float4 ScreenPos : TEXCOORD0;
+    float3 Pos : POSITION1;
 };
 
-float Noise(float2 coord)
-{
-    float n = sin(dot(coord, float2(12.9898, 78.233))) * 43758.5453;
-    return frac(n); // Use the fractional part to get a value between 0 and 1
-}
+
+
 
 // Actual shaders
 VertexShaderOutput MainVS(in VertexShaderInput input)
 {
-    VertexShaderOutput output = (VertexShaderOutput)0;
-    float offset = sin(((GridPos.x + input.Position.x + GridPos.z + input.Position.z) + Time / 3.0));
-    
-    input.Position.y -= abs(offset) * 0.2;
-    
+    VertexShaderOutput output = (VertexShaderOutput) 0;
+
+    output.Pos = input.Position;
     float4 worldPosition = mul(float4(input.Position.xyz, 1.0), World);
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
     output.Normal = normalize(input.Normals);
     output.ScreenPos = output.Position;
-
+    
     return output;
 }
 
@@ -78,18 +57,50 @@ float2 RotateUV(float2 uv, float angle)
 }
 
 float4 MainPS(VertexShaderOutput input) : COLOR0
-{   
-    float2 pixelCoords = input.ScreenPos.xy / input.ScreenPos.w; // Perspective divide
-    pixelCoords = pixelCoords * 0.5 + 0.5;
-    pixelCoords.y = 1.0 - pixelCoords.y;
-    float4 water = float4(0.0, 0.0, 0.8, 0.6);
-    //float4 noiseColor = tex2D(noise, pixelCoords + 0.05 * Time);
-    //pixelCoords += 0.2 * noiseColor.rr;
-    //float4 behind = tex.Sample(Sampler, pixelCoords);
-    // Final color is a combination of ambient and diffuse lighting
-    //pixelCoords = clamp(pixelCoords, 0.0, 1.0);
+{
+    float min = 0.05;
+    float max = 1.0 - 0.05;
+    float x = input.Pos.x;
+    float y = input.Pos.y;
+    float z = input.Pos.z;
+        // Check if the point is inside the unit cube
+        // Check if the point is on the edges (not on the faces)
+        bool is_edge = false;
 
-    return lerp(tex2D(tex, pixelCoords), water, 0.6);
+        // Check along the x axis
+        if (min < x && x < max &&
+            (y <= min || y >= 1.0 - min) &&
+            (z <= min || z >= 1.0 - min))
+        {
+            is_edge = true;
+        }
+        
+        // Check along the y axis
+        if (min < y && y < max &&
+            (x <= min || x >= 1.0 - min) &&
+            (z <= min || z >= 1.0 - min))
+        {
+            is_edge = true;
+        }
+        
+        // Check along the z axis
+        if (min < z && z < max &&
+            (x <= min || x >= 1.0 - min) &&
+            (y <= min || y >= 1.0 - min))
+        {
+            is_edge = true;
+        }
+    
+    
+        if (is_edge)
+        {
+            return float4(1.0, 1.0, 1.0, 1.0);
+        }
+        else
+        {
+            discard;
+        }
+    return float4(1.0, 1.0, 1.0, 1.0);
 }
 
 // Technique and passes within the technique

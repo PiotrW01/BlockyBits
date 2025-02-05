@@ -13,7 +13,7 @@ namespace BlockyBitsClient.src
         private static List<Effect> shaderList;
 
         public static Effect WaterShader = new(Game1.game.GraphicsDevice, File.ReadAllBytes("Content/shaders/HighlightEffect.mgfx"));
-
+        public static Effect OutlineShader = new(Game1.game.GraphicsDevice, File.ReadAllBytes("Content/shaders/Outline.mgfx"));
 
 
 

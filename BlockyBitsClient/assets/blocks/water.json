@@ -1,0 +1,10 @@
+{
+	"name": "water",
+	"isTransparent": true,
+	"isFluid": true,
+	"fluidDensity": 16.0,
+	"hasCollisions": false,
+	"faces": {
+		"all": "water"
+	}
+}

@@ -23,9 +23,22 @@ namespace BlockyBitsClient.src.player
             hotbarItems = new Item[size];
             hotbarInterface = new HotbarInterface(this);
             GUIManager.RegisterUIElement(hotbarInterface);
-            Item chicken = new Item();
-            chicken.sprite = new Sprite(TextureAtlas.GetTextureOf("raw-chicken"));
+            Item chicken = new Item("raw_chicken");
             hotbarItems[0] = chicken;
+        }
+
+        public bool AddItem(Item item)
+        {
+            for (int i = 0; i < hotbarItems.Length; i++)
+            {
+                if(hotbarItems[i] == null)
+                {
+                    hotbarItems[i] = item;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
 

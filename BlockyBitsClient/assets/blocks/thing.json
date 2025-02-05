@@ -1,0 +1,7 @@
+{
+	"name": "thing",
+	"isTransparent": false,
+	"isFluid": false,
+	"fluidDensity": 0,
+	"hasCollisions": true
+}

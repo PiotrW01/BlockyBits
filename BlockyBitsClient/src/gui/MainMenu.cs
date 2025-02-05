@@ -25,14 +25,16 @@ namespace BlockyBitsClient.src.gui
             {
                 GUIManager.RemoveUIElement(this);
                 GUIManager.RemoveUIElement(bt);
-                Game1.game.StartGame();
+                Game1.Player = new Player();
+                Game1.Player.Transform.GlobalPosition = new Vector3(-120, 35, 82);
+                ObjectManager.Add(Game1.Player);
             };
         }
 
 
         public override void Render(SpriteBatch sb)
         {
-            int res = Block.blockResolution * backgroundScale;
+            int res = TextureAtlas.resolution * backgroundScale;
 
             sb.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.PointWrap, DepthStencilState.Default, RasterizerState.CullNone);
             for (int x = 0; x < Game1.game.GraphicsDevice.Viewport.Width; x += res)

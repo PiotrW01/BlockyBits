@@ -5,23 +5,12 @@ namespace BlockyBitsClient.src
 {
     public class Transform
     {
-        Vector3 _globalPosition = Vector3.Zero;
         Vector3 _eulerAngles = Vector3.Zero;
         Quaternion _quaternion = Quaternion.Identity;
 
         public Vector3 Position = Vector3.Zero;
-        public Vector3 GlobalPosition
-        {
-            get
-            {
-                return _globalPosition;
-            }
-            set
-            {
-                //Position += value - GlobalPosition;
-                _globalPosition = value;
-            }
-        }
+        public Vector3 GlobalPosition;
+
         public Quaternion Quaternion
         {
             get
@@ -48,6 +37,7 @@ namespace BlockyBitsClient.src
             }
         }
         public Vector3 Scale = Vector3.One;
+
 
 
         public Vector3 GetEulerDegrees()

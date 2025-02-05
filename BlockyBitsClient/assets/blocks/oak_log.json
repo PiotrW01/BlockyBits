@@ -1,0 +1,12 @@
+{
+	"name": "oak_log",
+	"isTransparent": false,
+	"isFluid": false,
+	"fluidDensity": 0,
+	"hasCollisions": true,
+	"faces": {
+		"sides": "oak_log_side",
+		"top": "oak_log_top",
+		"bottom":  "oak_log_top"
+	}
+}

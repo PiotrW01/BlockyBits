@@ -5,6 +5,7 @@ using BlockyBitsClient.src.Managers;
 using BlockyBitsClient.src.player;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections;
@@ -28,7 +29,7 @@ public class Player: GameObject
     {
         inventory = new Inventory(12);
         hotbar = new Hotbar(9);
-        camera = Game1.camera;
+        camera = Game1.MainCamera;
         camera.Transform.Position = Vector3.Up * 0.7f;
 
         GUIManager.RegisterUIElement(new NoiseRenderer());
@@ -38,11 +39,23 @@ public class Player: GameObject
         Collider collider = new Collider();
         collider.SetSize(0.9f, 0.9f, 1.8f);
         AddComponent(collider);
-        AddComponent<Movement>();
+        AddComponent<PlayerMovement>();
     }
 
     public override void Update(float deltaTime)
     {
+        var drops = ObjectManager.FindClosestItems(Transform.GlobalPosition, 3);
+        foreach (DroppedItem drop in drops)
+        {
+            if(drop.TryGetItem(out var item))
+            {
+                if (!hotbar.AddItem(new Item("dirt")))
+                {
+                    break;
+                }
+            }
+        }
+
         if (thirdPerson)
         {
             Matrix m = Matrix.CreateFromQuaternion(camera.Transform.Quaternion);
@@ -56,7 +69,8 @@ public class Player: GameObject
         {
             lookingAtBlock = blockPos;
             isBlockReal = true;
-            Debugger.QueueDraw(new BoundingBox(lookingAtBlock, lookingAtBlock + Vector3.One));
+            //Debugger.QueueDraw(new BoundingBox(lookingAtBlock, lookingAtBlock + Vector3.One));
+            //Debugger.QueueDrawBlockModel(lookingAtBlock);
         });
     }
 
@@ -69,6 +83,12 @@ public class Player: GameObject
             {
                 camera.Transform.Position = Vector3.Up * 0.7f;
             }
+        }
+
+        if (Input.IsKeyJustPressed(Keys.Q))
+        {
+            ObjectManager.CreateDroppedItem(new("dirt"), Transform.GlobalPosition);
+            hotbar.hotbarItems[hotbar.selectedSlot] = null;
         }
     }
 
@@ -89,7 +109,49 @@ public class Player: GameObject
 
     }
 
-    private void Ray(Vector3 startPos, Vector3 direction, int reach, Action<Vector3> callback)
+    public override void Render()
+    {
+        if (!isBlockReal) return;
+        Matrix worldMatrix = Matrix.CreateTranslation(-0.5f, -0.5f, -0.5f) * Matrix.CreateScale(1.001f) * Matrix.CreateTranslation(lookingAtBlock + new Vector3(0.5f,0.5f,0.5f));
+        ModelShape shape = Block.GetBlockProperties("outline").ModelShape;
+
+        using VertexBuffer vbuffer = new VertexBuffer(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), shape.vertices.Count, BufferUsage.WriteOnly);
+        using IndexBuffer ibuffer = new IndexBuffer(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, shape.indices.Count, BufferUsage.WriteOnly);
+
+        vbuffer.SetData(shape.vertices.ToArray());
+        ibuffer.SetData(shape.indices.ToArray());
+
+/*        BasicEffect effect = new(Game1.game.GraphicsDevice)
+        {
+            World = worldMatrix,
+            View = Game1.MainCamera.viewMatrix,
+            Projection = Game1.MainCamera.projectionMatrix,
+            TextureEnabled = true,
+            Texture = TextureAtlas.atlas
+        };*/
+
+        Shaders.OutlineShader.Parameters["World"].SetValue(worldMatrix);
+        Shaders.OutlineShader.Parameters["View"].SetValue(Game1.MainCamera.viewMatrix);
+        Shaders.OutlineShader.Parameters["Projection"].SetValue(Game1.MainCamera.projectionMatrix);
+
+
+        Game1.game.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
+        Game1.game.GraphicsDevice.BlendState = BlendState.AlphaBlend;
+        foreach (EffectPass pass in Shaders.OutlineShader.CurrentTechnique.Passes)
+        {
+            pass.Apply();
+            Game1.game.GraphicsDevice.SetVertexBuffer(vbuffer);
+            Game1.game.GraphicsDevice.Indices = ibuffer;
+            Game1.game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, shape.indices.Count / 3);
+        }
+    }
+
+    public override void LoadContent(ContentManager cm)
+    {
+        
+    }
+
+    public void Ray(Vector3 startPos, Vector3 direction, int reach, Action<Vector3> callback)
     {
         float step = 0.02f;
         direction.Normalize();
@@ -105,12 +167,12 @@ public class Player: GameObject
         float zStep = difference.Z * step;
         Vector3 stepVector = new(xStep, yStep, zStep);
 
-        while(endGridCoord != currentGridCoord)
+        while (endGridCoord != currentGridCoord)
         {
             previousBlock = currentGridCoord;
             startPos.X += stepVector.X;
             Vector3 nextGridCoord = new Vector3(abc(startPos.X), abc(startPos.Y), abc(startPos.Z));
-            if(nextGridCoord != currentGridCoord)
+            if (nextGridCoord != currentGridCoord)
             {
                 currentGridCoord = nextGridCoord;
                 if (Utils.CollidesWithBlockAt(currentGridCoord))
@@ -118,10 +180,10 @@ public class Player: GameObject
                     callback(currentGridCoord);
                     return;
                 }
-            }            
+            }
             startPos.Y += stepVector.Y;
             nextGridCoord = new Vector3(abc(startPos.X), abc(startPos.Y), abc(startPos.Z));
-            if(nextGridCoord != currentGridCoord)
+            if (nextGridCoord != currentGridCoord)
             {
                 currentGridCoord = nextGridCoord;
                 if (Utils.CollidesWithBlockAt(currentGridCoord))
@@ -129,10 +191,10 @@ public class Player: GameObject
                     callback(currentGridCoord);
                     return;
                 }
-            }            
+            }
             startPos.Z += stepVector.Z;
             nextGridCoord = new Vector3(abc(startPos.X), abc(startPos.Y), abc(startPos.Z));
-            if(nextGridCoord != currentGridCoord)
+            if (nextGridCoord != currentGridCoord)
             {
                 currentGridCoord = nextGridCoord;
                 if (Utils.CollidesWithBlockAt(currentGridCoord))
@@ -154,7 +216,7 @@ public class Player: GameObject
 
     private void PlaceBlockAt(Vector3 globalCoord)
     {
-        ChunkManager.PlaceBlockAt(globalCoord, new Block(Block.Type.Stone));
+        ChunkManager.PlaceBlockAt(globalCoord, new Block("thing"));
     }
 
     private int abc(float x)

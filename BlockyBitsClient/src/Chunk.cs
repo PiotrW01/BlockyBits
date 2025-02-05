@@ -13,16 +13,20 @@ using System.Linq;
 public class Chunk
 {
 
+
     public BoundingBox boundingBox;
     public Vector2 pos;
 
     public int posX;
     public int posY;
 
-    public const int width = 32;
-    public const int depth = 32;
+    public double lastBlocksUpdate = 0;
+    public double lastMeshUpdate = 0;
+
+    public const int width = 16;
     public const int height = 256;
 
+    public bool isProcessed = false;
     public bool hasMesh = false;
     public bool isScheduledToUnload = false;
     private Dictionary<Vector3, Block> blocks = new();
@@ -35,26 +39,17 @@ public class Chunk
     private static BasicEffect effect = new(Game1.game.GraphicsDevice)
     {
         VertexColorEnabled = false,
-        Projection = Game1.camera.projectionMatrix,
+        Projection = Game1.MainCamera.projectionMatrix,
         TextureEnabled = true,
     };
 
     private static readonly Vector3[] faceNormals = {
-        new Vector3( 0,  0, -1), // Front
-        new Vector3( 0,  0,  1), // Back
-        new Vector3(-1,  0,  0), // Left
-        new Vector3( 1,  0,  0), // Right
-        new Vector3( 0,  1,  0), // Top
-        new Vector3( 0, -1,  0)  // Bottom
-    };
-
-    private static readonly Vector3[,] faceVertices = {
-        { new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 1, 0), new Vector3(0, 1, 0) }, // Front
-        { new Vector3(1, 0, 1), new Vector3(0, 0, 1), new Vector3(0, 1, 1), new Vector3(1, 1, 1) }, // Back
-        { new Vector3(0, 0, 1), new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 1, 1) }, // Left
-        { new Vector3(1, 0, 0), new Vector3(1, 0, 1), new Vector3(1, 1, 1), new Vector3(1, 1, 0) }, // Right
-        { new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 1, 1), new Vector3(0, 1, 1) }, // Top
-        { new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(1, 0, 0), new Vector3(0, 0, 0) },  // Bottom
+        new Vector3( 0,  0, -1), // North
+        new Vector3( 1,  0,  0), // East
+        new Vector3( 0,  0,  1), // South
+        new Vector3( -1,  0,  0), // West
+        new Vector3( 0,  1,  0), // Up
+        new Vector3( 0, -1,  0)  // Down
     };
 
     public Chunk(int posX, int posY)
@@ -62,8 +57,8 @@ public class Chunk
         this.posX = posX;
         this.posY = posY;
         pos = new Vector2(posX, posY);
-        boundingBox = new(new Vector3(posX * width, 0, posY * depth),
-                               new Vector3(posX * width + width, height, posY * depth + depth));
+        boundingBox = new(new Vector3(posX * width, 0, posY * width),
+                               new Vector3(posX * width + width, height, posY * width + width));
     }
 
     public Chunk(int posX, int posY, Dictionary<Vector3, Block> blocks)
@@ -72,8 +67,8 @@ public class Chunk
         this.posY = posY;
         this.blocks = blocks;
         pos = new Vector2(posX, posY);
-        boundingBox = new(new Vector3(posX * width, 0, posY * depth),
-                               new Vector3(posX * width + width, height, posY * depth + depth));
+        boundingBox = new(new Vector3(posX * width, 0, posY * width),
+                               new Vector3(posX * width + width, height, posY * width + width));
     }
 
 
@@ -82,150 +77,246 @@ public class Chunk
         this.blocks = blocks;
     }
 
-    public void GenerateMesh()
-    {
-        List<VertexPositionNormalTexture> texCoords = new();
-        List<VertexPositionNormalTexture> texCoordsWater = new();
-        List<int> indices = new();
-        List<int> indicesWater = new();
-
-        int highestPoint = 0;
-        foreach(var pos in blocks.Keys)
+    /*    public void GenerateMesh()
         {
-            Block block = blocks[pos];
-            BlockInformation blockInfo = Block.GetBlockInformation(block.type);
-            Vector2[] blockUVs = blockInfo.UVs;
+            List<VertexPositionNormalTexture> texCoords = new();
+            List<VertexPositionNormalTexture> texCoordsWater = new();
+            List<int> indices = new();
+            List<int> indicesWater = new();
 
-            if (pos.Y > highestPoint) highestPoint = (int)pos.Y;
-
-            for (int face = 0; face < 6; face++)
+            int highestPoint = 0;
+            foreach(var pos in blocks.Keys)
             {
-                Vector3 neighborPos = pos + faceNormals[face];
-                if (neighborPos.Y < 0) continue;
-                if (blocks.ContainsKey(neighborPos))
-                {
-                    if(blocks.TryGetValue(neighborPos, out Block b))
-                    {
-                        if (b.isTransparent && block.isTransparent) continue;
-                        if (!b.isTransparent) continue;
-                    }
-                }
-                if (neighborPos.X < 0)
-                {
-                    if(ChunkManager.Chunks.TryGetValue(new Vector2(posX - 1, posY), out Chunk chunk))
-                    {
-                        if(chunk.GetBlocks().TryGetValue(new Vector3(width - 1, pos.Y, pos.Z), out Block b))
-                        {
-                            if (b.isTransparent && block.isTransparent) continue;
-                            if (!b.isTransparent) continue;
-                        }
-                    }
-                    else continue;
-                }
-                if (neighborPos.Z < 0)
-                {
-                    if (ChunkManager.Chunks.TryGetValue(new Vector2(posX, posY - 1), out Chunk chunk))
-                    {
-                        if (chunk.GetBlocks().TryGetValue(new Vector3(pos.X, pos.Y, depth - 1), out Block b))
-                        {
-                            if (b.isTransparent && block.isTransparent) continue;
-                            if (!b.isTransparent) continue;
-                        }
-                    }
-                    else continue;
-                }
-                if (neighborPos.X == width)
-                {
-                    if (ChunkManager.Chunks.TryGetValue(new Vector2(posX + 1, posY), out Chunk chunk))
-                    {
-                        if (chunk.GetBlocks().TryGetValue(new Vector3(0, pos.Y, pos.Z), out Block b))
-                        {
-                            if (b.isTransparent && block.isTransparent) continue;
-                            if (!b.isTransparent) continue;
-                        }
-                    }
-                    else continue;
-                }
-                if (neighborPos.Z == depth)
-                {
-                    if (ChunkManager.Chunks.TryGetValue(new Vector2(posX, posY + 1), out Chunk chunk))
-                    {
-                        if (chunk.GetBlocks().TryGetValue(new Vector3(pos.X, pos.Y, 0), out Block b))
-                        {
-                            if (b.isTransparent && block.isTransparent) continue;
-                            if (!b.isTransparent) continue;
-                        }
-                    }
-                    else continue;
-                }
+                Block block = blocks[pos];
+                BlockProperties blockInfo = Block.GetBlockProperties(block.ID);
+                Vector2[] blockUVs = blockInfo.UVs;
 
-                if (block.isTransparent)
-                {
-                    int startIndex = texCoordsWater.Count;
-                    Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
-                    Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
-                    Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
-                    Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
-                    
-                    texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv0));
-                    texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv1));
-                    texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv2));
-                    texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv3));
+                if (pos.Y > highestPoint) highestPoint = (int)pos.Y;
 
-                    indicesWater.Add(startIndex);
-                    indicesWater.Add(startIndex + 1);
-                    indicesWater.Add(startIndex + 2);
-                    indicesWater.Add(startIndex);
-                    indicesWater.Add(startIndex + 2);
-                    indicesWater.Add(startIndex + 3);
-                } 
-                else
+                for (int face = 0; face < 6; face++)
                 {
-                    int startIndex = texCoords.Count;
-                    Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
-                    Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
-                    Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
-                    Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv3));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv2));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv1));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv0));
+                    Vector3 neighborPos = pos + faceNormals[face];
+                    if (neighborPos.Y < 0) continue;
+                    if (blocks.ContainsKey(neighborPos))
+                    {
+                        if(blocks.TryGetValue(neighborPos, out Block b))
+                        {
+                            if (b.isTransparent && block.isTransparent) continue;
+                            if (!b.isTransparent) continue;
+                        }
+                    }
+                    if (neighborPos.X < 0)
+                    {
+                        if(ChunkManager.Chunks.TryGetValue(new Vector2(posX - 1, posY), out Chunk chunk))
+                        {
+                            if(chunk.GetBlocks().TryGetValue(new Vector3(width - 1, pos.Y, pos.Z), out Block b))
+                            {
+                                if (b.isTransparent && block.isTransparent) continue;
+                                if (!b.isTransparent) continue;
+                            }
+                        }
+                        else continue;
+                    }
+                    if (neighborPos.Z < 0)
+                    {
+                        if (ChunkManager.Chunks.TryGetValue(new Vector2(posX, posY - 1), out Chunk chunk))
+                        {
+                            if (chunk.GetBlocks().TryGetValue(new Vector3(pos.X, pos.Y, depth - 1), out Block b))
+                            {
+                                if (b.isTransparent && block.isTransparent) continue;
+                                if (!b.isTransparent) continue;
+                            }
+                        }
+                        else continue;
+                    }
+                    if (neighborPos.X == width)
+                    {
+                        if (ChunkManager.Chunks.TryGetValue(new Vector2(posX + 1, posY), out Chunk chunk))
+                        {
+                            if (chunk.GetBlocks().TryGetValue(new Vector3(0, pos.Y, pos.Z), out Block b))
+                            {
+                                if (b.isTransparent && block.isTransparent) continue;
+                                if (!b.isTransparent) continue;
+                            }
+                        }
+                        else continue;
+                    }
+                    if (neighborPos.Z == depth)
+                    {
+                        if (ChunkManager.Chunks.TryGetValue(new Vector2(posX, posY + 1), out Chunk chunk))
+                        {
+                            if (chunk.GetBlocks().TryGetValue(new Vector3(pos.X, pos.Y, 0), out Block b))
+                            {
+                                if (b.isTransparent && block.isTransparent) continue;
+                                if (!b.isTransparent) continue;
+                            }
+                        }
+                        else continue;
+                    }
 
-                    indices.Add(startIndex);
-                    indices.Add(startIndex + 1);
-                    indices.Add(startIndex + 2);
-                    indices.Add(startIndex);
-                    indices.Add(startIndex + 2);
-                    indices.Add(startIndex + 3);
+                    if (block.isTransparent)
+                    {
+                        int startIndex = texCoordsWater.Count;
+                        Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
+                        Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+                        Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv0));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv1));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv2));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv3));
+
+                        indicesWater.Add(startIndex);
+                        indicesWater.Add(startIndex + 1);
+                        indicesWater.Add(startIndex + 2);
+                        indicesWater.Add(startIndex);
+                        indicesWater.Add(startIndex + 2);
+                        indicesWater.Add(startIndex + 3);
+                    } 
+                    else
+                    {
+                        int startIndex = texCoords.Count;
+                        Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
+                        Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+                        Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                        texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv3));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv2));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv1));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv0));
+
+                        indices.Add(startIndex);
+                        indices.Add(startIndex + 1);
+                        indices.Add(startIndex + 2);
+                        indices.Add(startIndex);
+                        indices.Add(startIndex + 2);
+                        indices.Add(startIndex + 3);
+                    }
                 }
             }
-        }
-        vertexCount = texCoords.Count;
-        waterVertexCount = texCoordsWater.Count;
-        indexCount = indices.Count;
-        waterIndexCount = indicesWater.Count;
+            vertexCount = texCoords.Count;
+            waterVertexCount = texCoordsWater.Count;
+            indexCount = indices.Count;
+            waterIndexCount = indicesWater.Count;
 
-        if (vertexCount == 0 || indexCount == 0) return;
+            if (vertexCount == 0 || indexCount == 0) return;
 
-        if (vertexBuffer != null)
+            if (vertexBuffer != null)
+            {
+                vertexBuffer.Dispose();
+            }
+
+            vertexBuffer = new VertexBuffer(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), vertexCount + waterVertexCount, BufferUsage.WriteOnly);
+            vertexBuffer.SetData(texCoords.Concat(texCoordsWater).ToArray());
+
+            if (indexBuffer != null)
+            {
+                indexBuffer.Dispose();
+            }
+
+            indexBuffer = new IndexBuffer(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indexCount + waterIndexCount, BufferUsage.WriteOnly);
+            indexBuffer.SetData(indices.Concat(indicesWater).ToArray());
+
+            boundingBox.Max.Y = highestPoint + 2;
+        }*/
+
+
+    /*    public void GenerateMeshNoOptimization()
         {
-            vertexBuffer.Dispose();
-        }
+            List<VertexPositionNormalTexture> texCoords = new();
+            List<VertexPositionNormalTexture> texCoordsWater = new();
+            List<int> indices = new();
+            List<int> indicesWater = new();
 
-        vertexBuffer = new VertexBuffer(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), vertexCount + waterVertexCount, BufferUsage.WriteOnly);
-        vertexBuffer.SetData(texCoords.Concat(texCoordsWater).ToArray());
+            int highestPoint = 0;
+            foreach (var pos in blocks.Keys)
+            {
+                Block block = blocks[pos];
+                BlockProperties blockInfo = Block.GetBlockProperties(block.type);
+                Vector2[] blockUVs = blockInfo.UVs;
 
-        if (indexBuffer != null)
-        {
-            indexBuffer.Dispose();
-        }
+                if (pos.Y > highestPoint) highestPoint = (int)pos.Y;
 
-        indexBuffer = new IndexBuffer(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indexCount + waterIndexCount, BufferUsage.WriteOnly);
-        indexBuffer.SetData(indices.Concat(indicesWater).ToArray());
+                for (int face = 0; face < 6; face++)
+                {
+                    Vector3 neighborPos = pos + faceNormals[face];
+                    if (neighborPos.Y < 0) continue;
+                    if (blocks.ContainsKey(neighborPos))
+                    {
+                        if (blocks.TryGetValue(neighborPos, out Block b))
+                        {
+                            if (b.isTransparent && block.isTransparent) continue;
+                            if (!b.isTransparent) continue;
+                        }
+                    }
 
-        boundingBox.Max.Y = highestPoint + 2;
-    }
+                    if (block.isTransparent)
+                    {
+                        int startIndex = texCoordsWater.Count;
+                        Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
+                        Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+                        Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
 
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv3));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv2));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv1));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv0));
+
+                        indicesWater.Add(startIndex);
+                        indicesWater.Add(startIndex + 1);
+                        indicesWater.Add(startIndex + 2);
+                        indicesWater.Add(startIndex);
+                        indicesWater.Add(startIndex + 2);
+                        indicesWater.Add(startIndex + 3);
+                    }
+                    else
+                    {
+                        int startIndex = texCoords.Count;
+                        Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
+                        Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
+                        Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
+                        Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
+                        texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv3));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv2));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv1));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv0));
+
+                        indices.Add(startIndex);
+                        indices.Add(startIndex + 1);
+                        indices.Add(startIndex + 2);
+                        indices.Add(startIndex);
+                        indices.Add(startIndex + 2);
+                        indices.Add(startIndex + 3);
+                    }
+                }
+            }
+            vertexCount = texCoords.Count;
+            waterVertexCount = texCoordsWater.Count;
+            indexCount = indices.Count;
+            waterIndexCount = indicesWater.Count;
+
+            if (vertexCount == 0 || indexCount == 0) return;
+
+            if (vertexBuffer != null)
+            {
+                vertexBuffer.Dispose();
+            }
+
+            vertexBuffer = new VertexBuffer(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), vertexCount + waterVertexCount, BufferUsage.WriteOnly);
+            vertexBuffer.SetData(texCoords.Concat(texCoordsWater).ToArray());
+
+            if (indexBuffer != null)
+            {
+                indexBuffer.Dispose();
+            }
+
+            indexBuffer = new IndexBuffer(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indexCount + waterIndexCount, BufferUsage.WriteOnly);
+            indexBuffer.SetData(indices.Concat(indicesWater).ToArray());
+
+            boundingBox.Max.Y = highestPoint + 2;
+        }*/
 
     public void GenerateMeshNoOptimization()
     {
@@ -238,64 +329,61 @@ public class Chunk
         foreach (var pos in blocks.Keys)
         {
             Block block = blocks[pos];
-            BlockInformation blockInfo = Block.GetBlockInformation(block.type);
-            Vector2[] blockUVs = blockInfo.UVs;
-
+            BlockProperties blockProps = Block.GetBlockProperties(block.ID);
+            ModelShape shape = blockProps.ModelShape;
             if (pos.Y > highestPoint) highestPoint = (int)pos.Y;
-
-            for (int face = 0; face < 6; face++)
+            if (shape.BlockCount > 1) 
+                Debug.WriteLine(shape.BlockCount);
+            for(int v = 0; v < shape.BlockCount; v++)
             {
-                Vector3 neighborPos = pos + faceNormals[face];
-                if (neighborPos.Y < 0) continue;
-                if (blocks.ContainsKey(neighborPos))
+                for (int face = 0; face < 6; face++)
                 {
-                    if (blocks.TryGetValue(neighborPos, out Block b))
+                    Vector3 neighborPos = pos + faceNormals[face];
+                    if (neighborPos.Y < 0) continue;
+                    if (blocks.ContainsKey(neighborPos))
                     {
-                        if (b.isTransparent && block.isTransparent) continue;
-                        if (!b.isTransparent) continue;
+                        if (blocks.TryGetValue(neighborPos, out Block b))
+                        {
+                            var props = Block.GetBlockProperties(b.ID);
+                            if (props.IsTransparent && blockProps.IsTransparent) continue;
+                            if (!props.IsTransparent) continue;
+                        }
+                    }
+
+                    if (blockProps.IsTransparent)
+                    {
+                        int startIndex = texCoordsWater.Count;
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + shape.vPositions[face * 4 + v * 24], shape.vNormals[face * 4 + v * 24], shape.vTextureUV[face * 4 + v * 24]));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + shape.vPositions[face * 4 + 1 + v * 24], shape.vNormals[face * 4 + 1 + v * 24], shape.vTextureUV[face * 4 + 1 + v * 24]));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + shape.vPositions[face * 4 + 2 + v * 24], shape.vNormals[face * 4 + 2 + v * 24], shape.vTextureUV[face * 4 + 2 + v * 24]));
+                        texCoordsWater.Add(new VertexPositionNormalTexture(pos + shape.vPositions[face * 4 + 3 + v * 24], shape.vNormals[face * 4 + 3 + v * 24], shape.vTextureUV[face * 4 + 3 + v * 24]));
+
+                        indicesWater.Add(startIndex);
+                        indicesWater.Add(startIndex + 1);
+                        indicesWater.Add(startIndex + 2);
+                        indicesWater.Add(startIndex);
+                        indicesWater.Add(startIndex + 2);
+                        indicesWater.Add(startIndex + 3);
+                    }
+                    else
+                    {
+                        int startIndex = texCoords.Count;
+                        texCoords.Add(new VertexPositionNormalTexture(pos + shape.vPositions[face * 4 + v * 24], shape.vNormals[face * 4 + v * 24], shape.vTextureUV[face * 4 + v * 24]));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + shape.vPositions[face * 4 + 1 + v * 24], shape.vNormals[face * 4 + 1 + v * 24], shape.vTextureUV[face * 4 + 1 + v * 24]));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + shape.vPositions[face * 4 + 2 + v * 24], shape.vNormals[face * 4 + 2 + v * 24], shape.vTextureUV[face * 4 + 2 + v * 24]));
+                        texCoords.Add(new VertexPositionNormalTexture(pos + shape.vPositions[face * 4 + 3 + v * 24], shape.vNormals[face * 4 + 3 + v * 24], shape.vTextureUV[face * 4 + 3 + v * 24]));
+
+                        indices.Add(startIndex);
+                        indices.Add(startIndex + 1);
+                        indices.Add(startIndex + 2);
+                        indices.Add(startIndex);
+                        indices.Add(startIndex + 2);
+                        indices.Add(startIndex + 3);
                     }
                 }
-
-                if (block.isTransparent)
-                {
-                    int startIndex = texCoordsWater.Count;
-                    Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
-                    Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
-                    Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
-                    Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
-
-                    texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv0));
-                    texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv1));
-                    texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv2));
-                    texCoordsWater.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv3));
-
-                    indicesWater.Add(startIndex);
-                    indicesWater.Add(startIndex + 1);
-                    indicesWater.Add(startIndex + 2);
-                    indicesWater.Add(startIndex);
-                    indicesWater.Add(startIndex + 2);
-                    indicesWater.Add(startIndex + 3);
-                }
-                else
-                {
-                    int startIndex = texCoords.Count;
-                    Vector2 uv0 = blockUVs[face]; // Top-left UV of the face texture
-                    Vector2 uv1 = uv0 + new Vector2(TextureAtlas.horizontalOffset, 0);
-                    Vector2 uv2 = uv0 + new Vector2(TextureAtlas.horizontalOffset, TextureAtlas.verticalOffset);
-                    Vector2 uv3 = uv0 + new Vector2(0, TextureAtlas.verticalOffset);
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 0], faceNormals[face], uv3));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 1], faceNormals[face], uv2));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 2], faceNormals[face], uv1));
-                    texCoords.Add(new VertexPositionNormalTexture(pos + faceVertices[face, 3], faceNormals[face], uv0));
-
-                    indices.Add(startIndex);
-                    indices.Add(startIndex + 1);
-                    indices.Add(startIndex + 2);
-                    indices.Add(startIndex);
-                    indices.Add(startIndex + 2);
-                    indices.Add(startIndex + 3);
-                }
             }
+
+
         }
         vertexCount = texCoords.Count;
         waterVertexCount = texCoordsWater.Count;
@@ -323,15 +411,16 @@ public class Chunk
         boundingBox.Max.Y = highestPoint + 2;
     }
 
+
     public void Render()
     {
         if (vertexBuffer == null || indexBuffer == null) return;
-        effect.World = Matrix.CreateWorld(new Vector3(posX * width, 0, posY * depth), Vector3.Forward, Vector3.Up);
-        effect.View = Game1.camera.viewMatrix;
+        effect.World = Matrix.CreateWorld(new Vector3(posX * width, 0, posY * width), Vector3.Forward, Vector3.Up);
+        effect.View = Game1.MainCamera.viewMatrix;
+        effect.Projection = Game1.MainCamera.projectionMatrix;
 
-
-        float distance = Vector2.Distance(pos * width, new Vector2(Game1.camera.Transform.GlobalPosition.X, Game1.camera.Transform.GlobalPosition.Z));
-        if(pos == Utils.WorldToChunkPosition(Game1.camera.Transform.GlobalPosition))
+        float distance = Vector2.Distance(pos * width, new Vector2(Game1.MainCamera.Transform.GlobalPosition.X, Game1.MainCamera.Transform.GlobalPosition.Z));
+        if(pos == Utils.WorldToChunkPosition(Game1.MainCamera.Transform.GlobalPosition))
         {
             Debugger.QueueDraw(boundingBox);
         }
@@ -369,10 +458,10 @@ public class Chunk
     {
         if (vertexBuffer == null || indexBuffer == null) return;
 
-        Shaders.WaterShader.Parameters["World"].SetValue(Matrix.CreateWorld(new Vector3(posX * width, 0, posY * depth), Vector3.Forward, Vector3.Up));
-        Shaders.WaterShader.Parameters["View"].SetValue(Game1.camera.viewMatrix);
-        Shaders.WaterShader.Parameters["Projection"].SetValue(Game1.camera.projectionMatrix);
-        Shaders.WaterShader.Parameters["GridPos"].SetValue(new Vector3(posX*width, 0, posY*depth));
+        Shaders.WaterShader.Parameters["World"].SetValue(Matrix.CreateWorld(new Vector3(posX * width, 0, posY * width), Vector3.Forward, Vector3.Up));
+        Shaders.WaterShader.Parameters["View"].SetValue(Game1.MainCamera.viewMatrix);
+        Shaders.WaterShader.Parameters["Projection"].SetValue(Game1.MainCamera.projectionMatrix);
+        Shaders.WaterShader.Parameters["GridPos"].SetValue(new Vector3(posX*width, 0, posY*width));
 
 
 
@@ -386,6 +475,21 @@ public class Chunk
                 Game1.game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, vertexCount, indexCount, waterIndexCount / 3);
             }
         }
+    }
+
+    public void SetMeshData(ChunkManager.MeshData meshData)
+    {
+        if (vertexBuffer != null) vertexBuffer.Dispose();
+        if (indexBuffer != null) indexBuffer.Dispose();
+
+        vertexBuffer = new(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), meshData.vertices.Length, BufferUsage.WriteOnly);
+        vertexBuffer.SetData(meshData.vertices);
+        indexBuffer = new(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, meshData.indices.Length, BufferUsage.WriteOnly);
+        indexBuffer.SetData(meshData.indices);
+        vertexCount = meshData.vertexCount;
+        waterVertexCount = meshData.waterVertexCount;
+        indexCount = meshData.indexCount;
+        waterIndexCount = meshData.waterIndexCount;
     }
 
     public bool HasBlockAt(Vector3 localPos)
@@ -402,10 +506,10 @@ public class Chunk
     public void SetBlock(Vector3 pos, Block block)
     {
         blocks[pos] = block;
-        GenerateMesh();
+        GenerateMeshNoOptimization();
     }
 
-    public void RemoveBlock(Vector3 localPos)
+/*    public void RemoveBlock(Vector3 localPos)
     {
         if (blocks.ContainsKey(localPos))
         {
@@ -429,13 +533,14 @@ public class Chunk
                 ChunkManager.Chunks[pos - Vector2.UnitY].GenerateMesh();
             }
         }
-    }
+    }*/
 
     public void RemoveBlockNotOptimized(Vector3 localPos)
     {
         blocks.Remove(localPos);
-        GenerateMesh();
+        GenerateMeshNoOptimization();
     }
+
     public Dictionary<Vector3, Block> GetBlocks()
     {
         return blocks;
