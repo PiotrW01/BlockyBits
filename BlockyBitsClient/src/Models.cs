@@ -1,9 +1,9 @@
 ﻿using LibNoise.Combiner;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using SharpGLTF.Schema2;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -30,6 +30,7 @@ namespace BlockyBitsClient.src
             {
                 return info;
             }
+            Debug.WriteLine("Could not get shape " + model);
             return ModelShapes["default"];
         }
 
@@ -243,6 +244,15 @@ namespace BlockyBitsClient.src
         public List<Vector3> vNormals;
         public List<Vector2> vTextureUV;
         public BoundingBox[] box;
+        private static BasicEffect effect = new(Game1.game.GraphicsDevice)
+        {
+            VertexColorEnabled = false,
+            TextureEnabled = true,
+            Texture = TextureAtlas.atlas
+        };
+
+        VertexBuffer vBuffer;
+        IndexBuffer iBuffer;
 
         public ModelShape(int blockCount, List<Vector3> vPos, List<Vector3> vNormals, Vector3[] boxMin, Vector3[] boxMax, List<int> indices, List<Vector2> vTex = null)
         {
@@ -270,8 +280,10 @@ namespace BlockyBitsClient.src
                     vertices.Add(new(vPositions[j * 4 + 3 + 24 * i], vNormals[j * 4 + 3 + 24 * i], vTextureUV[j * 4 + 3 + 24 * i]));
                 }
             }
-
-
+            vBuffer = new(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), vertices.Count, BufferUsage.WriteOnly);
+            vBuffer.SetData(vertices.ToArray());
+            iBuffer = new(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indices.Count, BufferUsage.WriteOnly);
+            iBuffer.SetData(indices.ToArray());
         }
 
         public void RefreshVertices()
@@ -287,6 +299,12 @@ namespace BlockyBitsClient.src
                     vertices.Add(new(vPositions[j * 4 + 3 + 24 * i], vNormals[j * 4 + 3 + 24 * i], vTextureUV[j * 4 + 3 + 24 * i]));
                 }
             }
+            if(vBuffer != null) vBuffer.Dispose();
+            if(iBuffer != null) iBuffer.Dispose();
+            vBuffer = new(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), vertices.Count, BufferUsage.WriteOnly);
+            vBuffer.SetData(vertices.ToArray());
+            iBuffer = new(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indices.Count, BufferUsage.WriteOnly);
+            iBuffer.SetData(indices.ToArray());
         }
 
         public ModelShape(ModelShape shape)
@@ -298,6 +316,28 @@ namespace BlockyBitsClient.src
             box = (BoundingBox[])shape.box.Clone();
             vertices = new(shape.vertices);
             indices = new(shape.indices);
+
+            if (vBuffer != null) vBuffer.Dispose();
+            if (iBuffer != null) iBuffer.Dispose();
+            vBuffer = new(Game1.game.GraphicsDevice, typeof(VertexPositionNormalTexture), vertices.Count, BufferUsage.WriteOnly);
+            vBuffer.SetData(vertices.ToArray());
+            iBuffer = new(Game1.game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indices.Count, BufferUsage.WriteOnly);
+            iBuffer.SetData(indices.ToArray());
+        }
+
+        public void Render(Matrix world)
+        {
+            effect.World = world;
+            effect.View = Game1.MainCamera.viewMatrix;
+            effect.Projection = Game1.MainCamera.projectionMatrix;
+            
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                Game1.game.GraphicsDevice.SetVertexBuffer(vBuffer);
+                Game1.game.GraphicsDevice.Indices = iBuffer;
+                Game1.game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, indices.Count / 3);
+            }
         }
     }
 }

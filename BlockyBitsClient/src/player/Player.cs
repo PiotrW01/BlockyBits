@@ -31,11 +31,11 @@ public class Player: GameObject
         hotbar = new Hotbar(9);
         camera = Game1.MainCamera;
         camera.Transform.Position = Vector3.Up * 0.7f;
-
+        //AddChild(new Hand());
         GUIManager.RegisterUIElement(new NoiseRenderer());
-
         AddChild(hotbar);
         AddChild(camera);
+        camera.AddChild(new Hand());
         Collider collider = new Collider();
         collider.SetSize(0.9f, 0.9f, 1.8f);
         AddComponent(collider);
@@ -69,8 +69,6 @@ public class Player: GameObject
         {
             lookingAtBlock = blockPos;
             isBlockReal = true;
-            //Debugger.QueueDraw(new BoundingBox(lookingAtBlock, lookingAtBlock + Vector3.One));
-            //Debugger.QueueDrawBlockModel(lookingAtBlock);
         });
     }
 
@@ -111,6 +109,8 @@ public class Player: GameObject
 
     public override void Render()
     {
+
+
         if (!isBlockReal) return;
         Matrix worldMatrix = Matrix.CreateTranslation(-0.5f, -0.5f, -0.5f) * Matrix.CreateScale(1.001f) * Matrix.CreateTranslation(lookingAtBlock + new Vector3(0.5f,0.5f,0.5f));
         ModelShape shape = Block.GetBlockProperties("outline").ModelShape;
@@ -121,19 +121,9 @@ public class Player: GameObject
         vbuffer.SetData(shape.vertices.ToArray());
         ibuffer.SetData(shape.indices.ToArray());
 
-/*        BasicEffect effect = new(Game1.game.GraphicsDevice)
-        {
-            World = worldMatrix,
-            View = Game1.MainCamera.viewMatrix,
-            Projection = Game1.MainCamera.projectionMatrix,
-            TextureEnabled = true,
-            Texture = TextureAtlas.atlas
-        };*/
-
         Shaders.OutlineShader.Parameters["World"].SetValue(worldMatrix);
         Shaders.OutlineShader.Parameters["View"].SetValue(Game1.MainCamera.viewMatrix);
         Shaders.OutlineShader.Parameters["Projection"].SetValue(Game1.MainCamera.projectionMatrix);
-
 
         Game1.game.GraphicsDevice.DepthStencilState = DepthStencilState.DepthRead;
         Game1.game.GraphicsDevice.BlendState = BlendState.AlphaBlend;
@@ -144,6 +134,9 @@ public class Player: GameObject
             Game1.game.GraphicsDevice.Indices = ibuffer;
             Game1.game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, shape.indices.Count / 3);
         }
+
+
+
     }
 
     public override void LoadContent(ContentManager cm)

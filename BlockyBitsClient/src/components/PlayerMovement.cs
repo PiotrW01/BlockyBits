@@ -149,7 +149,7 @@ internal class PlayerMovement: Component
             velocity.Z = Utils.Lerp(velocity.Z, 0, deltaTime * friction);
         } else
         {
-            Matrix yawMatrix = Matrix.CreateFromYawPitchRoll(Game1.MainCamera.Transform.EulerAngles.Y, 0, 0);
+            Matrix yawMatrix = Matrix.CreateFromYawPitchRoll(Game1.MainCamera.Transform.GlobalEulerAngles.Y, 0, 0);
             Vector3 direction = Vector3.Transform(move, yawMatrix);
             direction.Normalize();
             direction *= maxSpeed;

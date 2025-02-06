@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Log.md = Log.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoiseViusalizer", "NoiseViusalizer\NoiseViusalizer.csproj", "{33302EC6-CF54-41CC-8C65-76BF7284E9CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{6EB8E706-1E40-4C67-97F7-43E5C6EF5AC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EB8E706-1E40-4C67-97F7-43E5C6EF5AC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EB8E706-1E40-4C67-97F7-43E5C6EF5AC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33302EC6-CF54-41CC-8C65-76BF7284E9CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33302EC6-CF54-41CC-8C65-76BF7284E9CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33302EC6-CF54-41CC-8C65-76BF7284E9CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33302EC6-CF54-41CC-8C65-76BF7284E9CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

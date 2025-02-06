@@ -3,6 +3,7 @@ using Microsoft.VisualBasic.Logging;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using SharpGLTF.Schema2;
 using System;
 using System.Diagnostics;
 
@@ -39,29 +40,23 @@ public class Camera: Object
             );
     }
 
-    public override void Update(float deltaTime)
-    {
-        UpdateViewMatrix();
-    }
-
     public override void HandleMouseMove(float deltaTime, Vector2 mouseVec)
     {
         if (!Game1.game.mouseLocked) return;
         float pitch = Utils.DegToRad(maxPitch);
 
-        Transform.EulerAngles = new Vector3(
-            Math.Clamp(Transform.EulerAngles.X + mouseVec.Y * Settings.mouseSensitivity, -pitch, pitch),
-            Transform.EulerAngles.Y + mouseVec.X * Settings.mouseSensitivity,
-            Transform.EulerAngles.Z
+        Transform.GlobalEulerAngles = new Vector3(
+            Math.Clamp(Transform.GlobalEulerAngles.X + mouseVec.Y * Settings.mouseSensitivity, -pitch, pitch),
+            Transform.GlobalEulerAngles.Y + mouseVec.X * Settings.mouseSensitivity,
+            Transform.GlobalEulerAngles.Z
             );
     }
 
-    private void UpdateViewMatrix()
+    public void UpdateViewMatrix()
     {
         Matrix rotationMatrix = Matrix.CreateFromQuaternion(Transform.Quaternion);
         forward = Vector3.Transform(Vector3.Forward, rotationMatrix);
         viewMatrix = Matrix.CreateLookAt(Transform.GlobalPosition, Transform.GlobalPosition + forward, cameraUp);
     }
-
 }
 

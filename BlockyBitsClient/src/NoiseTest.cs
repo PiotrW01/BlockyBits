@@ -22,6 +22,7 @@ namespace BlockyBitsClient.src
 
         public NoiseTest(GraphicsDevice gd)
         {
+            
             perlinNoise = new(960, NoiseQuality.Best);
             texture = new(gd, size, size, true, SurfaceFormat.Color);
         }

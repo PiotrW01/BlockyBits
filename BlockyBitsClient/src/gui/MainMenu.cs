@@ -26,7 +26,7 @@ namespace BlockyBitsClient.src.gui
                 GUIManager.RemoveUIElement(this);
                 GUIManager.RemoveUIElement(bt);
                 Game1.Player = new Player();
-                Game1.Player.Transform.GlobalPosition = new Vector3(-120, 35, 82);
+                Game1.Player.Transform.GlobalPosition = new Vector3(-120, 85, 82);
                 ObjectManager.Add(Game1.Player);
             };
         }

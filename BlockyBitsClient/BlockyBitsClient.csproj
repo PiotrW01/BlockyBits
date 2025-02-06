@@ -23,6 +23,9 @@
     <None Update="assets\blocks\oak_log.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="assets\models\hand.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="assets\models\rail_block.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

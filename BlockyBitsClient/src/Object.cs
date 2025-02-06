@@ -2,18 +2,23 @@
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
 public abstract class Object
 {
-    public Transform Transform = new();
+    public Transform Transform;
+    public ModelShape model;
     Object parent = null;
     List<Object> children = new List<Object>();
     List<Component> components = new List<Component>();
-    
+
+    public Object()
+    {
+        Transform = new(this);
+    }
+
     public virtual void Start() { }
     public virtual void Render() { }
     public virtual void Update(float deltaTime) { }
@@ -39,7 +44,7 @@ public abstract class Object
         // adjusts each childs global pos relative to parent based on their local pos
         foreach (var child in children)
         {
-            child.Transform.GlobalPosition = Transform.GlobalPosition + child.Transform.Position;
+            //child.Transform.GlobalPosition = Transform.GlobalPosition + child.Transform.Position;
             child.Update(deltaTime);
             child.UpdateChildrenAndComponents(deltaTime);
         }
@@ -48,6 +53,25 @@ public abstract class Object
             c.Update(deltaTime);
         }
     }
+
+    public void UpdateChildPositions()
+    {
+        foreach(var child in children)
+        {
+            child.Transform.GlobalPosition = Transform.GlobalPosition + child.Transform.Position;
+        }
+    }
+
+    public void UpdateChildRotation(Quaternion difference)
+    {
+        foreach(var child in children)
+        {
+            //child.Transform.GlobalQuaternion = Transform.GlobalQuaternion * child.Transform.Quaternion;
+            child.Transform.Position = Vector3.Transform(child.Transform.Position, difference);
+            child.Transform.GlobalQuaternion = Transform.GlobalQuaternion * child.Transform.Quaternion;
+        }
+    }
+
     public void ChildrenStart(ContentManager cm)
     {
         foreach(var child in children)

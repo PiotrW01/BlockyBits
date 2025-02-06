@@ -139,33 +139,21 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
+        MainCamera.UpdateViewMatrix();
         Shaders.UpdateShaderParameters();
         GraphicsDevice.SetRenderTarget(renderTarget);
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         GraphicsDevice.DepthStencilState = DepthStencilState.Default;
         GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-        GraphicsDevice.BlendState = BlendState.Opaque;
-        GraphicsDevice.SamplerStates[0] = new SamplerState()
-        {
-            Filter = TextureFilter.Point,
-            AddressU = TextureAddressMode.Clamp,
-            AddressV = TextureAddressMode.Clamp,
-        };
+        GraphicsDevice.BlendState = BlendState.AlphaBlend;
+        GraphicsDevice.SamplerStates[0] = SamplerState.PointWrap;
         ChunkManager.RenderChunks();
 
 
         GraphicsDevice.SetRenderTarget(renderTarget2);
-        GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-        GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
-        GraphicsDevice.BlendState = BlendState.Opaque;
         GraphicsDevice.Clear(ClearOptions.Target, Color.CornflowerBlue, 0.0f, 0);
-        GraphicsDevice.SamplerStates[0] = new SamplerState()
-        {
-            Filter = TextureFilter.Point
-        };
         ChunkManager.RenderChunks();
-        GraphicsDevice.BlendState = BlendState.AlphaBlend;
         ChunkManager.RenderWater();
         ObjectManager.RenderObjects();
         
@@ -174,11 +162,10 @@ public class Game1 : Game
         _spriteBatch.Draw(renderTarget2, Vector2.Zero, Color.White);
         RenderDebugInfo();
         _spriteBatch.End();
-
+        GUIManager.RenderGUI(_spriteBatch);
 
 
         Debugger.DrawDebugLines();
-        GUIManager.RenderGUI(_spriteBatch);
         base.Draw(gameTime);
     }
 

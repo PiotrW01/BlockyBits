@@ -105,10 +105,11 @@ namespace BlockyBits.src
                 {
                     //float value = Noise.CalcPixel2D(xOffset + i, yOffset + j, 0.01f);
                     //float value = (plane.GetValue(xOffset + i, yOffset + j) + 1) / 2f * 255f;
-                    float value = test.GetValue(xOffset + i, yOffset + j) * 255f;
-                    value = Math.Clamp(value, 0.0f, 255.0f);
+                    float value = FractalNoise((i + xOffset), (j + yOffset), 0.015f, 7, 0.5f, 1.25f);
+                    //float value = test.GetValue(xOffset + i, yOffset + j) * 255f;
+                    value = 60 + value * 20f;
                     //value = Utils.Map(value, 0, 1, 0, Chunk.height);
-                    value /= 4f;
+                    //value /= 4f;
                     for (int k = 0; k <= (int)value; k++)
                     {
                         if (k < 16)
@@ -134,5 +135,22 @@ namespace BlockyBits.src
             return blocks;
         }
 
+        public float FractalNoise(float x, float y, float frequency, int octaves, float gain, float lacunarity)
+        {
+            float total = 0;
+            float maxValue = 0;
+            float amplitude = 1.0f;
+
+            for (int i = 0; i < octaves; i++)
+            {
+                total += IcariaNoise.GradientNoiseHQ(x * frequency, y * frequency, 22) * amplitude;
+                maxValue += amplitude;
+
+                amplitude *= gain; // Zmniejsz amplitudę
+                frequency *= lacunarity; // Podwój częstotliwość
+            }
+
+            return total / maxValue; // Normalizacja do zakresu 0-1
+        }
     }
 }
