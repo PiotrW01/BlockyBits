@@ -30,8 +30,12 @@ namespace BlockyBitsClient.src
                     _position = value;
                 } else
                 {
-                    _globalPosition = parent.Transform.GlobalPosition + value;
-                    _position = value;
+                    Vector3 n = Vector3.Transform(value, parent.Transform.GlobalQuaternion);
+                    _globalPosition = parent.Transform.GlobalPosition + n;
+                    _position = n;
+
+                    //_globalPosition = parent.Transform.GlobalPosition + value;
+                    //_position = value;
                 }
                 owner.UpdateChildPositions();
             }
@@ -78,6 +82,7 @@ namespace BlockyBitsClient.src
                     _globalQuaternion = parent.Transform.GlobalQuaternion * value;
                     _globalEulerAngles = ToEulerAngles(_globalQuaternion);
                 }
+                Forward = Vector3.Transform(Vector3.Forward, _globalQuaternion);
                 owner.UpdateChildRotation(value * Quaternion.Inverse(temp));
             }
         }
@@ -106,7 +111,7 @@ namespace BlockyBitsClient.src
                     _globalEulerAngles = ToEulerAngles(value);
                     //_eulerAngles = ToEulerAngles(_quaternion);
                 }
-                
+                Forward = Vector3.Transform(Vector3.Forward, _globalQuaternion);
                 owner.UpdateChildRotation(value * Quaternion.Inverse(temp));
             }
         }
@@ -137,7 +142,7 @@ namespace BlockyBitsClient.src
                     _quaternion = Quaternion.Inverse(parent.Transform.Quaternion) * _globalQuaternion;
                     _eulerAngles = ToEulerAngles(_quaternion);
                 }
-                
+                Forward = Vector3.Transform(Vector3.Forward, _globalQuaternion);
                 owner.UpdateChildRotation(_quaternion * Quaternion.Inverse(temp));
             }
         }
@@ -169,12 +174,12 @@ namespace BlockyBitsClient.src
                     _globalQuaternion = parent.Transform.Quaternion * _quaternion;
                     _globalEulerAngles = ToEulerAngles(_globalQuaternion);
                 }
-                
+                Forward = Vector3.Transform(Vector3.Forward, _globalQuaternion);
                 owner.UpdateChildRotation(_quaternion * Quaternion.Inverse(temp));
             }
         }
         public Vector3 Scale = Vector3.One;
-
+        public Vector3 Forward = Vector3.Forward;
 
 
         public Vector3 GetEulerDegrees()

@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using BlockyBits.src;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,9 +13,26 @@ namespace BlockyBitsClient.src.player
 {
     internal class Hand : GameObject
     {
+        Vector3 start = new Vector3(0.3f, 0.2f, -2f);
         public override void Start()
         {
-            Transform.Position = new Vector3(0.3f, 0f, 0f);
+            Transform.Position = start;
+        }
+
+
+        public override void Update(float deltaTime)
+        {
+            //Transform.Position = forward;
+            //Transform.Position += Transform.Forward * deltaTime / 3f;
+            //Debug.WriteLine(Transform.Forward);
+        }
+
+        public override void HandleInput(float deltaTime)
+        {
+            if (Input.IsKeyJustPressed(Keys.Y))
+            {
+                Transform.Position = new Vector3(0, 0, -1);
+            }
         }
 
         public override void LoadContent(ContentManager cm)

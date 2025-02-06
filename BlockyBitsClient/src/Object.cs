@@ -67,7 +67,7 @@ public abstract class Object
         foreach(var child in children)
         {
             //child.Transform.GlobalQuaternion = Transform.GlobalQuaternion * child.Transform.Quaternion;
-            child.Transform.Position = Vector3.Transform(child.Transform.Position, difference);
+            child.Transform.GlobalPosition = Transform.GlobalPosition + Vector3.Transform(child.Transform.Position, difference);
             child.Transform.GlobalQuaternion = Transform.GlobalQuaternion * child.Transform.Quaternion;
         }
     }

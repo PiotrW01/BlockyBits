@@ -149,7 +149,7 @@ public class Player: GameObject
         float step = 0.02f;
         direction.Normalize();
         Vector3 endPos = startPos + direction * reach;
-
+        Vector3 start = startPos;
         Vector3 endGridCoord = new Vector3(abc(endPos.X), abc(endPos.Y), abc(endPos.Z));
 
         Vector3 currentGridCoord = new Vector3(abc(startPos.X), abc(startPos.Y), abc(startPos.Z));
@@ -160,7 +160,7 @@ public class Player: GameObject
         float zStep = difference.Z * step;
         Vector3 stepVector = new(xStep, yStep, zStep);
 
-        while (endGridCoord != currentGridCoord)
+        while (endGridCoord != currentGridCoord && Vector3.Distance(start, currentGridCoord) <= reach)
         {
             previousBlock = currentGridCoord;
             startPos.X += stepVector.X;
